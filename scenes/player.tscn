@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bs6hcqyn2v4bb"]
 
 [ext_resource type="Texture2D" uid="uid://c5nj8a0w1x7mr" path="res://personaje-sin-fondo.png" id="1_3vyb7"]
-[ext_resource type="Script" uid="uid://q6q5uag0m5ap" path="res://scripts/player.gd" id="2_script"]
+[ext_resource type="Script" path="res://scripts/movement_controller.gd" id="2_script"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_o5qli"]
 radius = 113.0

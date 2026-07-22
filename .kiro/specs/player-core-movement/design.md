@@ -2,392 +2,339 @@
 
 ## Overview
 
-Este documento describe la arquitectura técnica para el sistema de movimiento principal del jugador en "Torchic", un platformer 2D en Godot 4.x con GDScript. El sistema cubre movimiento horizontal instantáneo, salto variable, gravedad asimétrica, pisotón con rebote, coyote time, input buffering, evento de aterrizaje y un sistema de modificadores de velocidad extensible.
+This design describes the architecture and implementation of the core player movement system for Torchic, a 2D pixel art platformer built on Godot 4.7 with GDScript. The system replaces the current simple movement script (`player.gd`) with a modular, data-driven movement controller that supports:
 
-La implementación se basa en `CharacterBody2D` de Godot 4.x, usando `_physics_process()` para toda la lógica de movimiento. El diseño prioriza la separación de responsabilidades para facilitar la integración futura con sistemas de combate, equipamiento e IA enemiga.
+- Instant horizontal movement (zero acceleration/deceleration)
+- Variable-height jumps with gravity multipliers
+- Stomp bounce with configurable multipliers
+- Coyote time and input buffering for forgiving jump mechanics
+- Landing event emission for animation feedback
+- Equipment-driven speed modifiers and ability unlocks (double jump)
+- Level-based base speed scaling
 
-### Design Decisions
-
-1. **Single script approach with composition signals**: El `Movement_Controller` vive en un solo script `player.gd` adjunto al nodo `CharacterBody2D`. Los sistemas externos (equipamiento, nivel, combate) interactúan mediante señales y setters públicos — no herencia.
-2. **No state machine for movement**: En lugar de un FSM formal, usamos flags booleanos (`is_on_floor()`, `is_ascending`, `has_coyote`) porque los estados de movimiento en un platformer 2D simple son mutuamente derivables del estado físico. Esto reduce la complejidad sin perder claridad.
-3. **Export vars for tuning**: Todos los parámetros de game feel (`jump_impulse`, `coyote_duration`, `buffer_window`, etc.) son `@export` para ajuste en el editor sin tocar código.
-4. **Signal-based communication**: El controlador emite señales (`landed`, `stomped`) que otros sistemas observan. El controlador no conoce al sistema de equipamiento ni al sistema de nivel — solo expone métodos para recibir modificadores.
+The design prioritizes frame-perfect responsiveness, clean separation between physics logic and external systems (equipment, leveling), and testability of the movement math independent of the Godot engine.
 
 ## Architecture
 
+The movement system follows a **single-script controller** pattern attached to the existing `CharacterBody2D` node. Rather than splitting into many small scripts (which adds indirection in GDScript without benefit for this scope), we use one `MovementController` script with clearly separated internal methods grouped by responsibility.
+
+External systems communicate with the controller through:
+- **Signals** (outbound): `landed`, `stomp_bounced`
+- **Setter methods** (inbound): `set_speed_modifier()`, `set_base_speed()`, `set_jump_height_bonus()`, `set_double_jump_enabled()`, `set_stomp_bounce_multiplier()`
+
 ```mermaid
 graph TD
-    subgraph PlayerCharacter [Player - CharacterBody2D]
-        MC[MovementController<br/>player.gd]
-        SP[Sprite2D]
-        CS[CollisionShape2D]
-        SC[StompDetector<br/>Area2D]
+    subgraph Player Node (CharacterBody2D)
+        MC[MovementController Script]
+        MC --> HM[Horizontal Movement]
+        MC --> VM[Vertical Movement / Jump]
+        MC --> GT[Gravity & Terminal Velocity]
+        MC --> CT[Coyote Time Timer]
+        MC --> IB[Input Buffer Timer]
+        MC --> SB[Stomp Bounce Handler]
+        MC --> LE[Landing Event Emitter]
     end
 
-    subgraph ExternalSystems
-        EQ[EquipmentSystem]
-        LV[LevelSystem]
-        AN[AnimationController]
-        EN[EnemyManager]
+    subgraph External Systems
+        EQ[Equipment System]
+        LVL[Level / Progression System]
+        ENEMY[Enemy Collision System]
+        ANIM[Animation Controller]
     end
 
-    MC -->|signal: landed| AN
-    MC -->|signal: stomped| AN
-    MC -->|signal: speed_changed| UI[HUD]
-    EQ -->|set_speed_modifier()| MC
-    EQ -->|set_jump_modifier()| MC
-    EQ -->|set_double_jump_enabled()| MC
-    EQ -->|set_stomp_multiplier()| MC
-    LV -->|set_base_speed()| MC
-    SC -->|body_entered| MC
-    EN -->|provides armor info| SC
+    EQ -- set_speed_modifier / set_jump_height_bonus / set_double_jump_enabled / set_stomp_bounce_multiplier --> MC
+    LVL -- set_base_speed --> MC
+    ENEMY -- notify_stomp_hit --> MC
+    MC -- signal: landed --> ANIM
+    MC -- signal: stomp_bounced --> ANIM
 ```
 
-### Physics Loop Flow
+### Design Decisions
 
-```mermaid
-flowchart TD
-    A[_physics_process] --> B[Apply Gravity]
-    B --> C[Handle Horizontal Input]
-    C --> D[Handle Jump Input]
-    D --> E[Update Coyote Time]
-    E --> F[Update Input Buffer]
-    F --> G[Check Stomp Collision]
-    G --> H[move_and_slide]
-    H --> I{Was in air?}
-    I -->|Yes & now on floor| J[Emit Landing Event]
-    I -->|No| K[Continue]
-    J --> K
-    K --> L[Update Animations]
-```
+1. **Single script, not a state machine**: The movement requirements are tightly coupled (gravity applies in all air states, input buffer fires on landing regardless of jump source). A flat controller with boolean flags (`_is_coyote_active`, `_has_double_jumped`) is simpler and more performant than a formal FSM for this scope.
+
+2. **Pure math functions for testability**: Speed calculation, gravity application, and jump height logic are extracted into static/pure helper functions that can be unit tested without instantiating a Godot node.
+
+3. **Configurable via exported variables**: All tuning parameters (jump velocity, gravity multiplier, coyote time duration, buffer window, terminal velocity) are `@export` vars editable in the Inspector for rapid iteration.
+
+4. **Timer-free approach**: Instead of `Timer` nodes, coyote time and input buffer use simple float counters decremented each physics frame. This avoids node overhead and is deterministic across frame rates (since `_physics_process` runs at fixed rate).
 
 ## Components and Interfaces
 
-### MovementController (player.gd)
-
-El script principal adjunto al nodo `CharacterBody2D`. Gestiona toda la lógica de movimiento.
+### MovementController (scripts/player.gd replacement)
 
 ```gdscript
-class_name PlayerMovementController
+class_name MovementController
 extends CharacterBody2D
 
 # --- Signals ---
 signal landed(impact_velocity: float)
-signal stomped(enemy: Node2D)
-signal speed_changed(new_effective_speed: float)
+signal stomp_bounced()
 
 # --- Exported Tuning Parameters ---
 @export_group("Horizontal Movement")
-@export var base_move_speed: float = 300.0  # pixels/sec at base_speed_multiplier = 1.0
+@export var base_pixel_speed: float = 300.0  # Pixels/sec at speed 1.0
 
 @export_group("Jump")
-@export var jump_impulse: float = -600.0
-@export var jump_cut_factor: float = 0.4
-@export var max_jump_hold_time: float = 0.2  # seconds
-@export var min_jump_height_factor: float = 0.3
+@export var jump_velocity: float = -450.0      # Initial upward impulse (negative = up)
+@export var jump_cut_multiplier: float = 0.4   # Applied when button released early
+@export var min_jump_time: float = 0.08        # Seconds of guaranteed jump force
 
 @export_group("Gravity")
 @export var gravity_up_multiplier: float = 1.0
 @export var gravity_down_multiplier: float = 1.6
 @export var terminal_velocity: float = 900.0
 
-@export_group("Stomp Bounce")
-@export var stomp_bounce_impulse: float = -500.0
-@export var stomp_bounce_held_multiplier: float = 1.4
+@export_group("Coyote Time")
+@export var coyote_time_duration: float = 0.1  # 100ms
 
-@export_group("Coyote Time & Input Buffer")
-@export var coyote_time_duration: float = 0.1  # seconds
-@export var input_buffer_duration: float = 0.12  # seconds
+@export_group("Input Buffer")
+@export var input_buffer_duration: float = 0.12  # 120ms
+
+@export_group("Stomp Bounce")
+@export var stomp_bounce_velocity: float = -350.0
+@export var stomp_bounce_hold_velocity: float = -500.0
 
 @export_group("Landing")
 @export var landing_velocity_threshold: float = 200.0
-
-# --- Runtime State ---
-var base_speed_multiplier: float = 1.0  # from LevelSystem (1.0 to 1.7)
-var speed_modifier: float = 0.0  # from EquipmentSystem (0.0 to 0.5)
-var jump_height_modifier: float = 0.0  # percentage from equipment
-var stomp_multiplier: float = 1.0  # from equipment
-var double_jump_enabled: bool = false
-var _has_double_jumped: bool = false
-
-var _coyote_timer: float = 0.0
-var _input_buffer_timer: float = 0.0
-var _is_jump_held: bool = false
-var _jump_hold_timer: float = 0.0
-var _was_on_floor: bool = true
-var _pre_land_velocity_y: float = 0.0
-
-# --- Computed Properties ---
-var effective_speed: float:
-    get:
-        return base_move_speed * (base_speed_multiplier + speed_modifier)
 ```
 
-### Public Interface Methods
+### Public Interface (Setters for External Systems)
+
+| Method | Parameters | Description |
+|--------|-----------|-------------|
+| `set_base_speed(value: float)` | `value`: 1.0–1.7 | Sets the level-based speed multiplier |
+| `set_speed_modifier(value: float)` | `value`: 0.0–0.5 | Sets the equipment speed bonus |
+| `set_jump_height_bonus(percent: float)` | `percent`: 0.0–1.0 | Scales jump velocity (e.g., 0.05 = +5%) |
+| `set_double_jump_enabled(enabled: bool)` | `enabled` | Enables/disables double jump |
+| `set_stomp_bounce_multiplier(mult: float)` | `mult`: 1.0–2.0 | Scales stomp bounce velocity |
+| `notify_stomp_hit()` | — | Called by enemy collision; triggers bounce |
+
+### Internal Methods (Private)
+
+| Method | Responsibility |
+|--------|---------------|
+| `_handle_horizontal_movement()` | Reads input, applies instant velocity |
+| `_handle_jump()` | Jump initiation, variable height, double jump |
+| `_handle_gravity(delta)` | Applies gravity with up/down multipliers |
+| `_handle_coyote_time(delta)` | Manages coyote timer countdown |
+| `_handle_input_buffer(delta)` | Manages input buffer countdown |
+| `_handle_landing()` | Detects ground transition, emits signal |
+| `_handle_stomp_bounce()` | Applies bounce velocity on stomp notification |
+| `_calculate_effective_speed() -> float` | Returns `base_pixel_speed * (base_speed + speed_modifier)` |
+
+### Utility / Pure Functions (for testing)
 
 ```gdscript
-# Called by EquipmentSystem when boots change
-func set_speed_modifier(value: float) -> void:
-    speed_modifier = clampf(value, 0.0, 0.5)
-    speed_changed.emit(effective_speed)
-
-# Called by EquipmentSystem for jump-enhancing gear
-func set_jump_modifier(percentage: float) -> void:
-    jump_height_modifier = percentage
-
-# Called by EquipmentSystem for stomp-enhancing gear
-func set_stomp_multiplier(value: float) -> void:
-    stomp_multiplier = value
-
-# Called by EquipmentSystem when boots grant double jump
-func set_double_jump_enabled(enabled: bool) -> void:
-    double_jump_enabled = enabled
-
-# Called by LevelSystem when player levels up
-func set_base_speed(level: int) -> void:
-    base_speed_multiplier = _calculate_base_speed_for_level(level)
-    speed_changed.emit(effective_speed)
+static func calculate_effective_speed(base_pixel_speed: float, base_speed: float, speed_modifier: float) -> float
+static func apply_gravity(current_vy: float, gravity: float, multiplier: float, delta: float, terminal: float) -> float
+static func apply_jump_cut(current_vy: float, cut_multiplier: float) -> float
+static func interpolate_base_speed(level: int) -> float
 ```
-
-### StompDetector (Area2D child node)
-
-Un `Area2D` posicionado debajo del `CollisionShape2D` del jugador. Detecta colisiones con enemigos desde arriba.
-
-```gdscript
-# Configured in editor:
-# - CollisionShape2D: small rectangle at player's feet
-# - Collision Layer: Player Stomp (layer 3)
-# - Collision Mask: Enemies (layer 2)
-# - Monitoring: true
-# - Monitorable: false
-```
-
-Cuando un cuerpo entra en el `StompDetector`:
-1. Se verifica que el jugador está descendiendo (`velocity.y > 0`)
-2. Se verifica que el enemigo no tiene `Armadura M` (consultando `enemy.has_armor_m`)
-3. Si ambas condiciones se cumplen, se aplica el `Stomp_Bounce`
-
-### AnimationController (future component)
-
-Observa señales del `MovementController`:
-- `landed` → reproduce animación de aterrizaje (squash)
-- `stomped` → reproduce efecto de impacto + partículas
 
 ## Data Models
 
+### Movement State (Internal)
+
+```gdscript
+# Runtime state tracked per frame
+var _base_speed: float = 1.0
+var _speed_modifier: float = 0.0
+var _jump_height_bonus: float = 0.0
+var _double_jump_enabled: bool = false
+var _has_double_jumped: bool = false
+var _stomp_bounce_multiplier: float = 1.0
+
+# Coyote time
+var _coyote_timer: float = 0.0
+var _was_on_floor_last_frame: bool = false
+
+# Input buffer
+var _jump_buffer_timer: float = 0.0
+
+# Jump tracking
+var _is_jumping: bool = false
+var _jump_held_time: float = 0.0
+
+# Stomp
+var _stomp_requested: bool = false
+
+# Landing detection
+var _previous_velocity_y: float = 0.0
+```
+
 ### Speed Progression Table
 
-La tabla mapea nivel del jugador (1–15) a `base_speed_multiplier`:
+The base speed values from the GDD map linearly between defined levels:
 
-```gdscript
-const SPEED_TABLE: Array[float] = [
-    1.0,   # Level 1
-    1.0,   # Level 2
-    1.1,   # Level 3
-    1.1,   # Level 4
-    1.2,   # Level 5
-    1.2,   # Level 6
-    1.3,   # Level 7
-    1.3,   # Level 8
-    1.4,   # Level 9
-    1.4,   # Level 10
-    1.5,   # Level 11
-    1.5,   # Level 12
-    1.6,   # Level 13
-    1.6,   # Level 14
-    1.7,   # Level 15
-]
+| Level | Base Speed |
+|-------|-----------|
+| 1 | 1.0 |
+| 3 | 1.1 |
+| 5 | 1.2 |
+| 7 | 1.3 |
+| 9 | 1.4 |
+| 11 | 1.5 |
+| 13 | 1.6 |
+| 15 | 1.7 |
 
-func _calculate_base_speed_for_level(level: int) -> float:
-    var clamped_level := clampi(level, 1, 15)
-    return SPEED_TABLE[clamped_level - 1]
-```
+Linear interpolation formula: `base_speed = 1.0 + (level - 1) * (0.7 / 14.0)`
 
-Para interpolación entre niveles (si se necesita progresión suave):
+This yields exact GDD values at defined levels and smooth transitions between them.
 
-```gdscript
-func _interpolate_speed_for_level(level: int, progress_to_next: float) -> float:
-    var current := _calculate_base_speed_for_level(level)
-    var next := _calculate_base_speed_for_level(mini(level + 1, 15))
-    return lerpf(current, next, progress_to_next)
-```
+### Equipment Speed Modifiers (from GDD)
 
-### Equipment Modifier Data
+| Equipment | Speed Modifier | Jump Bonus | Special |
+|-----------|---------------|------------|---------|
+| Botas de Tela | +0.1 | — | — |
+| Botas de Cuero Reforzado | +0.2 | +5% jump height | — |
+| Botas Furia de Viento | +0.35 | — | Double Jump (short) |
+| Botas Gravitacionales | +0.5 | — | Stomp bounce ×2 |
 
-```gdscript
-# Resource class for boot items
-class_name BootsData
-extends Resource
 
-@export var speed_bonus: float = 0.0        # [0.0, 0.5]
-@export var jump_bonus_percent: float = 0.0  # percentage increase
-@export var enables_double_jump: bool = false
-@export var stomp_multiplier: float = 1.0    # 1.0 = normal, 2.0 = gravitational boots
-```
-
-### Movement State Snapshot (for debugging/replay)
-
-```gdscript
-class MovementSnapshot:
-    var velocity: Vector2
-    var is_on_floor: bool
-    var coyote_active: bool
-    var buffer_active: bool
-    var effective_speed: float
-    var jump_held: bool
-```
 
 ## Correctness Properties
 
 *A property is a characteristic or behavior that should hold true across all valid executions of a system — essentially, a formal statement about what the system should do. Properties serve as the bridge between human-readable specifications and machine-verifiable correctness guarantees.*
 
-### Property 1: Instant Horizontal Velocity
+### Property 1: Effective Speed Calculation
 
-*For any* direction input (left, right, or none) and *for any* player state (Ground_State or Air_State), on the frame the input is processed, `velocity.x` SHALL equal `direction * effective_speed` when direction is non-zero, and `0.0` when direction is zero — with no intermediate transitional values.
+*For any* direction (-1, 0, or 1), base_speed in [1.0, 1.7], and speed_modifier in [0.0, 0.5], the resulting horizontal velocity SHALL equal `direction * base_pixel_speed * (base_speed + speed_modifier)`, regardless of whether the character is on the ground or in the air.
 
-**Validates: Requirements 1.1, 1.2, 1.4, 1.5**
+**Validates: Requirements 1.1, 1.3, 1.4, 1.5, 8.1**
 
-### Property 2: Effective Speed Formula
+### Property 2: Jump Cut Reduces Velocity
 
-*For any* `base_speed_multiplier` in [1.0, 1.7] and *for any* `speed_modifier` in [0.0, 0.5], `effective_speed` SHALL equal `base_move_speed * (base_speed_multiplier + speed_modifier)`.
-
-**Validates: Requirements 1.3, 8.1**
-
-### Property 3: Variable Jump Cut
-
-*For any* ascending velocity (velocity.y < 0) at the moment the jump button is released, the resulting velocity SHALL be `velocity.y * jump_cut_factor`, effectively shortening the jump.
+*For any* ascending velocity (negative value) and cut_multiplier in (0.0, 1.0), applying jump cut SHALL produce a velocity equal to `current_vy * cut_multiplier`, resulting in a value closer to zero (less negative) than the original.
 
 **Validates: Requirements 2.3**
 
-### Property 4: Jump Hold Sustains Ascent
+### Property 3: Gravity Application with Terminal Velocity
 
-*For any* frame where the jump button is held and the player is ascending and `jump_hold_timer < max_jump_hold_time`, the jump cut SHALL NOT be applied — the player continues ascending under normal gravity only.
+*For any* current vertical velocity, gravity value, multiplier, and delta, applying gravity SHALL produce `min(current_vy + gravity * multiplier * delta, terminal_velocity)` — the velocity increases toward terminal but never exceeds it.
 
-**Validates: Requirements 2.2**
+**Validates: Requirements 3.1, 3.2**
 
-### Property 5: Gravity Model with Terminal Velocity
+### Property 4: Asymmetric Gravity Selection
 
-*For any* frame where the player is in Air_State: (a) if ascending (velocity.y < 0), gravity applied SHALL be `project_gravity * gravity_up_multiplier * delta`; (b) if descending (velocity.y >= 0), gravity applied SHALL be `project_gravity * gravity_down_multiplier * delta`; and (c) `velocity.y` SHALL never exceed `terminal_velocity`.
+*For any* frame where the character is airborne, if the vertical velocity is positive (descending) the gravity_down_multiplier SHALL be used, and if the vertical velocity is negative (ascending) the gravity_up_multiplier SHALL be used, where gravity_down_multiplier > gravity_up_multiplier.
 
-**Validates: Requirements 3.1, 3.2, 3.3**
+**Validates: Requirements 3.3**
 
-### Property 6: Stomp Bounce Conditions
+### Property 5: Stomp Bounce Multiplier Scaling
 
-*For any* collision between the Player and an enemy: a Stomp_Bounce SHALL be applied if and only if (a) the player's `velocity.y > 0` (descending), (b) the collision is from above (StompDetector triggered), and (c) the enemy does NOT have `Armadura M`.
+*For any* stomp_bounce_velocity and stomp_bounce_multiplier in [1.0, 2.0], the applied bounce velocity SHALL equal `stomp_bounce_velocity * stomp_bounce_multiplier`.
 
-**Validates: Requirements 4.1**
+**Validates: Requirements 4.4**
 
-### Property 7: Stomp Bounce Amplification
+### Property 6: Coyote Timer Expiration
 
-*For any* Stomp_Bounce event, the applied impulse SHALL equal `stomp_bounce_impulse * stomp_multiplier` when jump is NOT held, and `stomp_bounce_impulse * stomp_multiplier * stomp_bounce_held_multiplier` when jump IS held during the bounce frame.
+*For any* coyote_time_duration and sequence of elapsed deltas whose sum >= coyote_time_duration, after processing those deltas the coyote timer SHALL be <= 0 and jumping SHALL be disallowed (unless on floor or double jump is available).
 
-**Validates: Requirements 4.3, 4.4**
+**Validates: Requirements 5.3**
 
-### Property 8: Coyote Time Window
+### Property 7: Input Buffer Expiration
 
-*For any* frame after the player leaves Ground_State without jumping: jump SHALL be permitted if and only if `coyote_timer > 0`. Upon executing a coyote jump, `coyote_timer` SHALL immediately be set to 0, preventing a second jump in the same window.
+*For any* input_buffer_duration and sequence of elapsed deltas whose sum >= input_buffer_duration without landing, the buffered jump request SHALL be discarded (buffer timer <= 0).
 
-**Validates: Requirements 5.2, 5.3, 5.4**
+**Validates: Requirements 6.3**
 
-### Property 9: Input Buffer Round-Trip
+### Property 8: Landing Event Threshold Filter
 
-*For any* jump press while airborne and unable to jump: if the player lands within `input_buffer_duration` seconds of the press, a jump SHALL execute on the landing frame. If `input_buffer_duration` expires before landing, the buffered input SHALL be discarded and no jump occurs on landing.
-
-**Validates: Requirements 6.1, 6.2, 6.3**
-
-### Property 10: Landing Event Threshold Gate
-
-*For any* transition from Air_State to Ground_State, the `landed` signal SHALL be emitted if and only if the absolute value of the vertical velocity immediately before landing exceeds `landing_velocity_threshold`.
+*For any* previous vertical velocity and landing_velocity_threshold, the landing event SHALL be emitted if and only if `previous_velocity_y > landing_velocity_threshold`.
 
 **Validates: Requirements 7.3**
 
-### Property 11: Equipment Modifier Round-Trip
+### Property 9: Jump Height Bonus Scaling
 
-*For any* equipment item with a speed bonus, equipping it SHALL set `speed_modifier` to the item's value, and unequipping it SHALL revert `speed_modifier` to the value prior to equipping (or 0.0 if no other item is active).
-
-**Validates: Requirements 8.2, 8.3**
-
-### Property 12: Speed Modifier Range Invariant
-
-*For any* sequence of equip/unequip operations, `speed_modifier` SHALL always remain within the range [0.0, 0.5].
-
-**Validates: Requirements 8.6**
-
-### Property 13: Double Jump Once Per Air Cycle
-
-*For any* air cycle (from leaving ground to returning to ground) with `double_jump_enabled == true`, exactly one additional mid-air jump SHALL be permitted. Subsequent mid-air jump attempts SHALL be denied until the player returns to Ground_State.
-
-**Validates: Requirements 8.5**
-
-### Property 14: Base Speed from Level Table
-
-*For any* player level in [1, 15], `base_speed_multiplier` SHALL equal the linearly interpolated value from the progression table (1.0 at level 1, scaling to 1.7 at level 15 with defined anchor points).
-
-**Validates: Requirements 9.1, 9.3**
-
-### Property 15: Jump Height Modifier Application
-
-*For any* `jump_height_modifier` percentage from equipment, the effective jump impulse SHALL equal `jump_impulse * (1.0 + jump_height_modifier / 100.0)`.
+*For any* base jump_velocity and jump_height_bonus in [0.0, 1.0], the effective jump impulse SHALL equal `jump_velocity * (1.0 + jump_height_bonus)`.
 
 **Validates: Requirements 8.4**
 
+### Property 10: Speed Modifier Clamping
+
+*For any* input value passed to set_speed_modifier, the stored speed_modifier SHALL be clamped to the range [0.0, 0.5].
+
+**Validates: Requirements 8.6**
+
+### Property 11: Level-to-Speed Linear Interpolation
+
+*For any* player level in [1, 15], the base_speed SHALL equal `1.0 + (level - 1) * (0.7 / 14.0)`, yielding exactly 1.0 at level 1 and 1.7 at level 15.
+
+**Validates: Requirements 9.1, 9.3**
+
 ## Error Handling
 
-### Invalid Input States
-- **Simultaneous left+right**: Treated as no input (`direction = 0`). Godot's `Input.get_axis()` handles this naturally by canceling out.
-- **Jump while already ascending**: Ignored unless double-jump is enabled and unused.
-- **Negative speed values**: `clampf` ensures `speed_modifier` cannot produce negative effective speed.
+### Invalid Input Values
 
-### Boundary Conditions
-- **Level out of range**: `clampi(level, 1, 15)` ensures the speed table lookup never goes out of bounds.
-- **Equipment stacking**: Only one pair of boots can be active. `set_speed_modifier()` replaces (not accumulates) the value.
-- **Terminal velocity**: Hard-capped with `minf(velocity.y, terminal_velocity)` every frame.
+| Scenario | Handling |
+|----------|----------|
+| `set_speed_modifier` receives value < 0.0 | Clamp to 0.0 |
+| `set_speed_modifier` receives value > 0.5 | Clamp to 0.5 |
+| `set_base_speed` receives value outside [1.0, 1.7] | Clamp to valid range |
+| `set_jump_height_bonus` receives negative value | Clamp to 0.0 |
+| `set_stomp_bounce_multiplier` receives value < 1.0 | Clamp to 1.0 |
+| `interpolate_base_speed` receives level < 1 or > 15 | Clamp level to [1, 15] |
+| `notify_stomp_hit` called while on ground | Ignore (no bounce applied) |
+| Multiple `notify_stomp_hit` in same frame | Process only the first |
 
 ### Edge Cases
-- **Stomping armored enemies**: StompDetector queries the enemy's `has_armor_m` property. If true, no bounce — the collision is passed to the damage system instead.
-- **Coyote time after stomp bounce**: Coyote time is NOT activated after a stomp bounce (player left ground via impulse, not walking off edge).
-- **Input buffer during coyote time**: If coyote time is active, the jump executes immediately rather than buffering.
 
-### Signal Safety
-- Signals are emitted after `move_and_slide()` completes to ensure consistent state.
-- The `landed` signal includes `impact_velocity` for receivers to scale visual feedback.
+- **Zero delta**: If `_physics_process` receives delta = 0, timers don't decrement and gravity doesn't apply. No special handling needed — math naturally produces no change.
+- **Extremely high velocity from external forces**: Terminal velocity clamp applies regardless of source.
+- **Simultaneous coyote jump + input buffer**: If both are active on the same frame, execute the buffered jump (coyote provides the permission, buffer provides the request).
 
 ## Testing Strategy
 
-### Property-Based Tests (GDScript + GUT framework)
+### Unit Tests (Example-Based)
 
-Se utilizará el framework **GUT** (Godot Unit Test) para tests unitarios y de propiedades. Para property-based testing, se implementarán generators de datos aleatorios que alimentan las propiedades definidas arriba.
+Unit tests cover specific scenarios, integration points, and edge cases:
+
+- Jump initiation on ground (2.1)
+- Jump sustain while held (2.2)
+- Minimum jump time guarantee (2.4)
+- Stomp bounce application (4.1)
+- Stomp bounce with held jump gives enhanced bounce (4.3)
+- Coyote time activation on edge walk-off (5.1)
+- Jump during coyote time succeeds (5.2)
+- Coyote time consumed after jump (5.4)
+- Input buffer stores request in air (6.1)
+- Buffered jump fires on landing (6.2)
+- Landing signal emission (7.1)
+- Double jump: one extra jump allowed, second denied, reset on landing (8.5)
+- Direction reversal is instant (1.5)
+- Stop on direction release (1.2)
+- set_speed_modifier / set_base_speed update internal state (8.2, 8.3, 9.2)
+
+### Property-Based Tests
+
+Property-based tests validate the 11 correctness properties above using **GdUnit4** with its built-in fuzzer capabilities, or alternatively a custom lightweight property test harness in GDScript that generates random inputs over 100+ iterations per property.
 
 **Configuration:**
 - Minimum 100 iterations per property test
 - Each test tagged with: `Feature: player-core-movement, Property {N}: {title}`
-- Random seed logged for reproducibility
+- Tests exercise pure/static functions (no Godot node instantiation needed)
 
-**Library:** GUT (gdUnit4 como alternativa si GUT no soporta generación suficiente)
+**Library choice:** GdUnit4 (Godot-native testing framework with `Fuzzers` support for property-based generation). If GdUnit4 is not available, a simple `for i in range(100)` loop with `randf_range()` / `randi_range()` achieves the same effect for these pure math functions.
 
-**Properties to implement as PBT:**
-1. Property 1: Instant Horizontal Velocity — generate random directions and states
-2. Property 2: Effective Speed Formula — generate random modifier combinations
-3. Property 3: Variable Jump Cut — generate random ascending velocities
-4. Property 5: Gravity Model — generate random frame sequences
-5. Property 8: Coyote Time Window — generate random timer values
-6. Property 9: Input Buffer Round-Trip — generate random timing sequences
-7. Property 12: Speed Modifier Range Invariant — generate random equip sequences
-8. Property 14: Base Speed from Level Table — generate all 15 levels + fractional progress
-
-### Unit Tests (Example-Based)
-
-- Jump impulse applies correct value when grounded (Req 2.1)
-- Minimum jump height guarantees (Req 2.4, edge case)
-- Stomp bounce base magnitude is correct (Req 4.2)
-- Coyote timer starts on walking off edge (Req 5.1)
-- Landing signal emitted on air-to-ground transition (Req 7.1)
-- Level-up updates base speed (Req 9.2)
-- Animation triggered on landing signal (Req 7.2)
+**Property test targets:**
+| Property | Function Under Test |
+|----------|-------------------|
+| 1: Effective Speed | `calculate_effective_speed()` |
+| 2: Jump Cut | `apply_jump_cut()` |
+| 3: Gravity + Terminal | `apply_gravity()` |
+| 4: Asymmetric Gravity | Multiplier selection logic |
+| 5: Stomp Scaling | Bounce calculation |
+| 6: Coyote Expiration | Timer countdown logic |
+| 7: Buffer Expiration | Timer countdown logic |
+| 8: Landing Threshold | Threshold comparison |
+| 9: Jump Bonus | Jump velocity scaling |
+| 10: Speed Clamping | `set_speed_modifier()` clamping |
+| 11: Level Interpolation | `interpolate_base_speed()` |
 
 ### Integration Tests
 
-- Full jump cycle: press → ascend → release → cut → descend → land → signal
-- Stomp bounce into input buffer → chained jump
-- Equipment swap during air state doesn't cause physics glitches
-- Coyote time into buffered jump edge case
+- Equipment system calls `set_speed_modifier` → movement speed changes observed
+- Level-up system calls `set_base_speed` → movement speed changes observed
+- Enemy collision calls `notify_stomp_hit` → bounce occurs
+- Landing signal triggers animation system
