@@ -545,6 +545,7 @@ class_name LevelConfigData
 extends Resource
 
 @export var floor_id: int = 0
+@export var phase: Phase = Phase.FOREST
 @export var scene_path: String = ""
 @export var sublevels: Array[SubLevelConfig] = []
 @export var boss_type: BossType = BossType.MINI
@@ -552,6 +553,15 @@ extends Resource
 @export var map_length_px: float = 5000.0  # Total horizontal map length
 
 enum BossType { MINI, MAJOR }
+enum Phase { FOREST, CAVE, LABORATORY }
+
+func get_phase_for_floor(floor_id: int) -> Phase:
+    if floor_id <= 5:
+        return Phase.FOREST
+    elif floor_id <= 10:
+        return Phase.CAVE
+    else:
+        return Phase.LABORATORY
 
 func is_major_boss_floor() -> bool:
     return floor_id in [5, 10, 15]
@@ -669,24 +679,44 @@ Estructura intermedia para transferir estado del jugador entre escenas.
 
 ### Level Progression Table
 
+Las 3 fases temáticas del juego representan una progresión narrativa: naturaleza reconquistando tecnología → tecnología abandonada en cuevas → el corazón tecnológico (laboratorio) donde habita el virus final.
+
 ```
+FASE 1: BOSQUE TECNOLÓGICO (Pisos 1-5)
+Ambientación: Bosque denso con ruinas tecnológicas antiguas consumidas por la flora.
+Vegetación creciendo sobre servidores oxidados, cables cubiertos de musgo, pantallas rotas con enredaderas.
+
 Floor | Boss Type | Sub-Levels             | Notes
 ------|-----------|------------------------|---------------------------
-1     | MINI      | 1 CHASE               | Tutorial floor
-2     | MINI      | 1 INFILTRATION         | Introduce infiltration
-3     | MINI      | 1 PUZZLE               | Introduce puzzles
-4     | MINI      | 1 CHASE, 1 PUZZLE      | Mix types
-5     | MAJOR     | 1 PRECISION_AIMING     | First major boss
-6     | MINI      | 2 mixed                | Difficulty ramp
-7     | MINI      | 2 mixed                |
-8     | MINI      | 2 mixed                |
-9     | MINI      | 2 mixed                |
-10    | MAJOR     | 2 mixed                | Second major boss
-11    | MINI      | 3 mixed                | Late game difficulty
-12    | MINI      | 3 mixed                |
-13    | MINI      | 3 mixed                |
-14    | MINI      | 3 mixed                |
-15    | MAJOR     | 3 mixed                | Final boss
+1     | MINI      | 1 CHASE               | Tutorial - sendero del bosque con raíces mecánicas
+2     | MINI      | 1 INFILTRATION         | Ruinas de antena cubierta de hiedra
+3     | MINI      | 1 PUZZLE               | Terminal vieja entre árboles - puzzle de circuitos
+4     | MINI      | 1 CHASE, 1 PUZZLE      | Bosque profundo con drones averiados
+5     | MAJOR     | 1 PRECISION_AIMING     | Jefe Mayor: Guardián del Bosque (robot jardinero corrupto)
+
+FASE 2: CUEVA TECNOLÓGICA (Pisos 6-10)
+Ambientación: Sistema de cuevas subterráneas con restos tecnológicos menos dañados.
+Servidores parcialmente funcionales, luces LED parpadeantes, cables activos, cristales que reflejan datos.
+
+Floor | Boss Type | Sub-Levels             | Notes
+------|-----------|------------------------|---------------------------
+6     | MINI      | 2 mixed                | Entrada a las cuevas - transición flora → roca + tech
+7     | MINI      | 2 mixed                | Túneles con raíles de datos luminosos
+8     | MINI      | 2 mixed                | Cámara de servidores semi-activos
+9     | MINI      | 2 mixed                | Río de coolant con plataformas de hardware
+10    | MAJOR     | 2 mixed                | Jefe Mayor: Centinela de la Cueva (IA de seguridad)
+
+FASE 3: LABORATORIO (Pisos 11-15)
+Ambientación: Laboratorio tecnológico avanzado, totalmente funcional y hostil.
+Ambiente estéril, hologramas, láseres, compuertas automáticas, estética cyberpunk/digital.
+
+Floor | Boss Type | Sub-Levels             | Notes
+------|-----------|------------------------|---------------------------
+11    | MINI      | 3 mixed                | Sector de pruebas - trampas láser
+12    | MINI      | 3 mixed                | Cámaras de contención con anomalías digitales
+13    | MINI      | 3 mixed                | Núcleo de procesamiento - plataformas holográficas
+14    | MINI      | 3 mixed                | Sala del mainframe - defensas máximas
+15    | MAJOR     | 3 mixed                | JEFE FINAL: El Virus (entidad digital que corrompe el entorno)
 ```
 
 ## Correctness Properties
