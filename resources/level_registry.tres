@@ -1,0 +1,47 @@
+[gd_resource type="Resource" script_class="LevelRegistry" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/level_system/data/level_registry.gd" id="1"]
+[ext_resource type="Script" path="res://scripts/level_system/data/level_config_data.gd" id="2"]
+[ext_resource type="Script" path="res://scripts/level_system/data/sublevel_config.gd" id="3"]
+
+[sub_resource type="Resource" id="SubLevelConfig_1"]
+script = ExtResource("3")
+sublevel_id = "chase_1_1"
+sublevel_type = 0
+scene_path = "res://scenes/levels/sublevel_chase_1.tscn"
+transition_type = 0
+has_time_limit = false
+time_limit_seconds = 0.0
+
+[sub_resource type="Resource" id="SubLevelConfig_2"]
+script = ExtResource("3")
+sublevel_id = "precision_5_1"
+sublevel_type = 2
+scene_path = "res://scenes/levels/sublevel_precision_1.tscn"
+transition_type = 2
+has_time_limit = true
+time_limit_seconds = 60.0
+
+[sub_resource type="Resource" id="LevelConfig_1"]
+script = ExtResource("2")
+floor_id = 1
+phase = 0
+scene_path = "res://scenes/levels/floor_1.tscn"
+sublevels = [SubResource("SubLevelConfig_1")]
+boss_type = 0
+entre_nivel_scene_path = "res://scenes/entre_nivel.tscn"
+map_length_px = 5000.0
+
+[sub_resource type="Resource" id="LevelConfig_5"]
+script = ExtResource("2")
+floor_id = 5
+phase = 0
+scene_path = "res://scenes/levels/floor_5.tscn"
+sublevels = [SubResource("SubLevelConfig_2")]
+boss_type = 1
+entre_nivel_scene_path = "res://scenes/entre_nivel.tscn"
+map_length_px = 7000.0
+
+[resource]
+script = ExtResource("1")
+levels = [SubResource("LevelConfig_1"), SubResource("LevelConfig_5")]

@@ -1,0 +1,31 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/level_system/sublevel_exit_trigger.gd" id="1_exit"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(2000, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_exit"]
+size = Vector2(64, 128)
+
+[node name="SublevelChase1" type="Node2D"]
+
+[node name="Ground" type="StaticBody2D" parent="."]
+position = Vector2(1000, 400)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground"]
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="GroundSprite" type="ColorRect" parent="Ground"]
+offset_left = -1000.0
+offset_top = -16.0
+offset_right = 1000.0
+offset_bottom = 16.0
+color = Color(0.4, 0.3, 0.6, 1)
+
+[node name="ExitArea" type="Area2D" parent="."]
+position = Vector2(1900, 350)
+script = ExtResource("1_exit")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitArea"]
+shape = SubResource("RectangleShape2D_exit")

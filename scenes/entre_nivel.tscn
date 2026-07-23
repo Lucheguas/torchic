@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://blanh1wjccjdm"]
+
+[ext_resource type="Script" uid="uid://bsxtum5nosacn" path="res://scripts/level_system/transition_trigger.gd" id="1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(800, 32)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_exit"]
+size = Vector2(64, 64)
+
+[node name="EntreNivel" type="Node2D" unique_id=1079863320]
+
+[node name="Ground" type="StaticBody2D" parent="." unique_id=152923964]
+position = Vector2(400, 400)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground" unique_id=1581921150]
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="GroundSprite" type="ColorRect" parent="Ground" unique_id=504915985]
+offset_left = -400.0
+offset_top = -18.0
+offset_right = 400.0
+offset_bottom = 14.0
+color = Color(0.6, 0.5, 0.2, 1)
+
+[node name="ExitTrigger" type="Area2D" parent="." unique_id=1054773470]
+position = Vector2(700, 350)
+script = ExtResource("1")
+target_type = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="ExitTrigger" unique_id=748260283]
+shape = SubResource("RectangleShape2D_exit")
+
+[node name="ExitLabel" type="Label" parent="ExitTrigger" unique_id=318965412]
+offset_left = -40.0
+offset_top = -50.0
+offset_right = 40.0
+offset_bottom = -30.0
+text = "EXIT"
+horizontal_alignment = 1

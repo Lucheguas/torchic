@@ -1,0 +1,53 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/level_system/checkpoint_marker.tscn" id="2_checkpoint"]
+[ext_resource type="PackedScene" path="res://scenes/level_system/transition_trigger.tscn" id="3_trigger"]
+[ext_resource type="Script" path="res://scripts/level_system/data/sublevel_config.gd" id="4_sublevel_cfg"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(5000, 32)
+
+[sub_resource type="Resource" id="SubLevelConfig_chase1"]
+script = ExtResource("4_sublevel_cfg")
+sublevel_id = "chase_1"
+sublevel_type = 0
+scene_path = "res://scenes/levels/sublevel_chase_1.tscn"
+transition_type = 0
+has_time_limit = false
+time_limit_seconds = 0.0
+
+[node name="Floor1" type="Node2D"]
+
+[node name="Ground" type="StaticBody2D" parent="."]
+position = Vector2(2500, 620)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground"]
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="GroundSprite" type="ColorRect" parent="Ground"]
+offset_left = -2500.0
+offset_top = -16.0
+offset_right = 2500.0
+offset_bottom = 16.0
+color = Color(0.3, 0.6, 0.2, 1)
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(100, 500)
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
+
+[node name="Checkpoint1" parent="." instance=ExtResource("2_checkpoint")]
+position = Vector2(1650, 580)
+
+[node name="Checkpoint2" parent="." instance=ExtResource("2_checkpoint")]
+position = Vector2(3300, 580)
+
+[node name="SublevelEntry" parent="." instance=ExtResource("3_trigger")]
+position = Vector2(2500, 550)
+target_type = 0
+sublevel_config = SubResource("SubLevelConfig_chase1")
+
+[node name="LevelEnd" parent="." instance=ExtResource("3_trigger")]
+position = Vector2(4800, 550)
+target_type = 2
