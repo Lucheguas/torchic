@@ -253,6 +253,11 @@ func _on_entre_nivel_exit_triggered(_trigger) -> void:
 	exit_entre_nivel()
 
 
+func _on_next_floor_triggered(_trigger) -> void:
+	if current_state == GameFlowState.PLAYING_MAIN_LEVEL:
+		complete_floor()
+
+
 func _on_scene_loaded(packed_scene: PackedScene) -> void:
 	# Disconnect the signal to avoid duplicate connections on next load
 	if scene_loader.scene_loaded.is_connected(_on_scene_loaded):
@@ -323,8 +328,12 @@ func _on_scene_loaded(packed_scene: PackedScene) -> void:
 	var triggers := _current_scene_root.find_children("*", "Area2D", true, false)
 	for trigger in triggers:
 		if trigger.has_signal("triggered") and trigger.get("target_type") != null:
-			if not trigger.triggered.is_connected(enter_sublevel):
-				trigger.triggered.connect(enter_sublevel)
+			if trigger.target_type == 2:  # NEXT_FLOOR
+				if not trigger.triggered.is_connected(_on_next_floor_triggered):
+					trigger.triggered.connect(_on_next_floor_triggered)
+			elif trigger.target_type == 0:  # SUBLEVEL
+				if not trigger.triggered.is_connected(enter_sublevel):
+					trigger.triggered.connect(enter_sublevel)
 
 	# Find CheckpointMarker nodes and register with checkpoint_system
 	var markers := _current_scene_root.find_children("*", "Area2D", true, false)

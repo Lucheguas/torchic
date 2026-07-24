@@ -4,16 +4,16 @@
 [ext_resource type="Script" path="res://scripts/movement_controller.gd" id="2_script"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_o5qli"]
-radius = 113.0
-height = 310.0
+radius = 14.0
+height = 48.0
 
 [node name="Player" type="CharacterBody2D" unique_id=516110515 groups=["player"]]
 script = ExtResource("2_script")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1484951232]
-position = Vector2(2.0000005, 4)
+scale = Vector2(0.18, 0.18)
 texture = ExtResource("1_3vyb7")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=427698248]
-position = Vector2(8, 14)
+position = Vector2(0, 0)
 shape = SubResource("CapsuleShape2D_o5qli")

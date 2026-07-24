@@ -30,7 +30,7 @@ scene_path = "res://scenes/levels/floor_1.tscn"
 sublevels = [SubResource("SubLevelConfig_1")]
 boss_type = 0
 entre_nivel_scene_path = "res://scenes/entre_nivel.tscn"
-map_length_px = 5000.0
+map_length_px = 2700.0
 
 [sub_resource type="Resource" id="LevelConfig_5"]
 script = ExtResource("2")

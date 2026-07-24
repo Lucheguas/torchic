@@ -1,12 +1,26 @@
-[gd_scene load_steps=6 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/level_system/checkpoint_marker.tscn" id="2_checkpoint"]
 [ext_resource type="PackedScene" path="res://scenes/level_system/transition_trigger.tscn" id="3_trigger"]
 [ext_resource type="Script" path="res://scripts/level_system/data/sublevel_config.gd" id="4_sublevel_cfg"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_basic.tscn" id="5_enemy"]
+[ext_resource type="Script" path="res://scripts/kill_zone.gd" id="6_killzone"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
-size = Vector2(5000, 32)
+[sub_resource type="RectangleShape2D" id="ground_main"]
+size = Vector2(2100, 32)
+
+[sub_resource type="RectangleShape2D" id="wall_zona2"]
+size = Vector2(32, 80)
+
+[sub_resource type="RectangleShape2D" id="platform_block"]
+size = Vector2(96, 16)
+
+[sub_resource type="RectangleShape2D" id="ground_after_pit"]
+size = Vector2(400, 32)
+
+[sub_resource type="RectangleShape2D" id="kill_zone_shape"]
+size = Vector2(150, 32)
 
 [sub_resource type="Resource" id="SubLevelConfig_chase1"]
 script = ExtResource("4_sublevel_cfg")
@@ -19,35 +33,123 @@ time_limit_seconds = 0.0
 
 [node name="Floor1" type="Node2D"]
 
-[node name="Ground" type="StaticBody2D" parent="."]
-position = Vector2(2500, 620)
+[node name="Environment" type="Node2D" parent="."]
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Ground"]
-shape = SubResource("RectangleShape2D_floor")
+[node name="Ground_Main" type="StaticBody2D" parent="Environment"]
+position = Vector2(1050, 600)
+metadata/_edit_group_ = true
 
-[node name="GroundSprite" type="ColorRect" parent="Ground"]
-offset_left = -2500.0
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Ground_Main"]
+shape = SubResource("ground_main")
+
+[node name="Visual" type="ColorRect" parent="Environment/Ground_Main"]
+offset_left = -1050.0
 offset_top = -16.0
-offset_right = 2500.0
+offset_right = 1050.0
 offset_bottom = 16.0
 color = Color(0.3, 0.6, 0.2, 1)
 
-[node name="Player" parent="." instance=ExtResource("1_player")]
-position = Vector2(100, 500)
+[node name="Wall_Zona2" type="StaticBody2D" parent="Environment"]
+position = Vector2(900, 560)
 
-[node name="Camera2D" type="Camera2D" parent="Player"]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Wall_Zona2"]
+shape = SubResource("wall_zona2")
 
-[node name="Checkpoint1" parent="." instance=ExtResource("2_checkpoint")]
-position = Vector2(1650, 580)
+[node name="Visual" type="ColorRect" parent="Environment/Wall_Zona2"]
+offset_left = -16.0
+offset_top = -40.0
+offset_right = 16.0
+offset_bottom = 40.0
+color = Color(0.45, 0.35, 0.25, 1)
 
-[node name="Checkpoint2" parent="." instance=ExtResource("2_checkpoint")]
-position = Vector2(3300, 580)
+[node name="Platform1" type="StaticBody2D" parent="Environment"]
+position = Vector2(1600, 510)
 
-[node name="SublevelEntry" parent="." instance=ExtResource("3_trigger")]
-position = Vector2(2500, 550)
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Platform1"]
+shape = SubResource("platform_block")
+
+[node name="Visual" type="ColorRect" parent="Environment/Platform1"]
+offset_left = -48.0
+offset_top = -8.0
+offset_right = 48.0
+offset_bottom = 8.0
+color = Color(0.5, 0.4, 0.3, 1)
+
+[node name="Platform2" type="StaticBody2D" parent="Environment"]
+position = Vector2(1750, 470)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Platform2"]
+shape = SubResource("platform_block")
+
+[node name="Visual" type="ColorRect" parent="Environment/Platform2"]
+offset_left = -48.0
+offset_top = -8.0
+offset_right = 48.0
+offset_bottom = 8.0
+color = Color(0.5, 0.4, 0.3, 1)
+
+[node name="Platform3" type="StaticBody2D" parent="Environment"]
+position = Vector2(1900, 510)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Platform3"]
+shape = SubResource("platform_block")
+
+[node name="Visual" type="ColorRect" parent="Environment/Platform3"]
+offset_left = -48.0
+offset_top = -8.0
+offset_right = 48.0
+offset_bottom = 8.0
+color = Color(0.5, 0.4, 0.3, 1)
+
+[node name="Ground_AfterPit" type="StaticBody2D" parent="Environment"]
+position = Vector2(2450, 600)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Ground_AfterPit"]
+shape = SubResource("ground_after_pit")
+
+[node name="Visual" type="ColorRect" parent="Environment/Ground_AfterPit"]
+offset_left = -200.0
+offset_top = -16.0
+offset_right = 200.0
+offset_bottom = 16.0
+color = Color(0.3, 0.6, 0.2, 1)
+
+[node name="Spawners" type="Node2D" parent="."]
+
+[node name="PlayerSpawnPoint" type="Marker2D" parent="Spawners"]
+position = Vector2(100, 570)
+
+[node name="Checkpoint1" parent="Spawners" instance=ExtResource("2_checkpoint")]
+position = Vector2(1350, 580)
+
+[node name="Checkpoint2" parent="Spawners" instance=ExtResource("2_checkpoint")]
+position = Vector2(2050, 580)
+
+[node name="SublevelEntry" parent="Spawners" instance=ExtResource("3_trigger")]
+position = Vector2(1950, 560)
 target_type = 0
 sublevel_config = SubResource("SubLevelConfig_chase1")
 
-[node name="LevelEnd" parent="." instance=ExtResource("3_trigger")]
-position = Vector2(4800, 550)
+[node name="LevelEnd" parent="Spawners" instance=ExtResource("3_trigger")]
+position = Vector2(2600, 560)
 target_type = 2
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Enemy_Tutorial_1" parent="Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(1200, 584)
+
+[node name="Enemy_Tutorial_2" parent="Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(1750, 454)
+
+[node name="KillZone" type="Area2D" parent="."]
+position = Vector2(2175, 700)
+script = ExtResource("6_killzone")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KillZone"]
+shape = SubResource("kill_zone_shape")
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(100, 570)
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
