@@ -168,6 +168,11 @@ func _physics_process(delta: float) -> void:
 		$Sprite2D.flip_h = direction < 0.0
 	_animate_walk(delta, direction)
 
+	# Melee attack — trigger toward whichever way the sprite is facing.
+	if Input.is_action_just_pressed("attack"):
+		var facing := -1.0 if $Sprite2D.flip_h else 1.0
+		$MeleeAttack.trigger(facing)
+
 
 func _animate_walk(delta: float, direction: float) -> void:
 	if direction != 0.0 and is_on_floor():

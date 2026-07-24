@@ -2,10 +2,15 @@
 
 [ext_resource type="Texture2D" uid="uid://c5nj8a0w1x7mr" path="res://personaje-sin-fondo.png" id="1_3vyb7"]
 [ext_resource type="Script" path="res://scripts/movement_controller.gd" id="2_script"]
+[ext_resource type="Script" path="res://scripts/weapons/melee_attack.gd" id="3_melee"]
+[ext_resource type="Resource" path="res://resources/weapons/daga_de_madera.tres" id="4_daga"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_o5qli"]
 radius = 10.0
 height = 48.0
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_melee"]
+size = Vector2(20, 32)
 
 [node name="Player" type="CharacterBody2D" unique_id=516110515 groups=["player"]]
 script = ExtResource("2_script")
@@ -17,3 +22,14 @@ texture = ExtResource("1_3vyb7")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=427698248]
 position = Vector2(0, 0)
 shape = SubResource("CapsuleShape2D_o5qli")
+
+[node name="MeleeAttack" type="Area2D" parent="."]
+script = ExtResource("3_melee")
+weapon = ExtResource("4_daga")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeAttack"]
+shape = SubResource("RectangleShape2D_melee")
+
+[node name="Blade" type="Polygon2D" parent="MeleeAttack"]
+color = Color(0.55, 0.4, 0.2, 1)
+polygon = PackedVector2Array(-8, -14, 8, -14, 6, 14, -6, 14)

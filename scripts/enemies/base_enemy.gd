@@ -7,9 +7,7 @@ extends CharacterBody2D
 
 
 ## Subtracts amount from hp and frees the node if hp drops to zero or below.
-## Amount defaults to 1 so subclasses can call take_stomp_damage() with no args
-## for the common single-hit stomp.
-func take_stomp_damage(amount: int = 1) -> void:
+func take_damage(amount: int) -> void:
 	hp -= amount
 	if hp <= 0:
 		queue_free()

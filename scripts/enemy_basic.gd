@@ -27,7 +27,7 @@ func _on_stomp_area_body_entered(body: Node2D) -> void:
 	# resolution order depends on relative fall speed and geometry).
 	if body.global_position.y < global_position.y:
 		body.notify_stomp_hit()
-		take_stomp_damage(1)  # inherited from BaseEnemy
+		take_damage(1)  # inherited from BaseEnemy
 
 
 func _physics_process(delta: float) -> void:
