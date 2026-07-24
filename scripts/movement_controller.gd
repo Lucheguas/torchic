@@ -156,6 +156,7 @@ func _physics_process(delta: float) -> void:
 
 	move_and_slide()
 
+	_check_enemy_contact_damage()
 	_handle_landing()
 
 	# Update frame tracking for next tick
@@ -317,3 +318,20 @@ func _handle_landing() -> void:
 			_is_jumping = true
 			_jump_held_time = 0.0
 			_jump_buffer_timer = 0.0
+
+
+# --- Enemy Contact Damage ---
+
+## Kills the player when they contact an enemy from the side or below.
+## Contacts from above (stomps) are ignored — the enemy's StompArea handles them.
+## Called immediately after move_and_slide() so slide collisions are available.
+func _check_enemy_contact_damage() -> void:
+	for i in get_slide_collision_count():
+		var collision := get_slide_collision(i)
+		var collider := collision.get_collider()
+		if collider is BaseEnemy and not (collider as Node).is_queued_for_deletion():
+			# Normal.y < -0.7 means the surface faces up ⇒ player landed on top.
+			# Anything else (sides, from below) counts as taking damage.
+			if collision.get_normal().y > -0.7:
+				LevelManager.handle_player_death()
+				return
