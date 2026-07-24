@@ -1,8 +1,8 @@
 class_name EnemyBasic
-extends CharacterBody2D
+extends BaseEnemy
 ## Basic patrolling enemy (Tier 0.5) for the tutorial level.
 ## Walks left and right between two patrol bounds.
-## Can be defeated by player stomp (top collision).
+## Defeated by a single stomp via inherited BaseEnemy.take_stomp_damage.
 
 @export var patrol_speed: float = 80.0
 @export var patrol_distance: float = 120.0  ## Distance from spawn to each side
@@ -18,11 +18,16 @@ func _ready() -> void:
 
 
 func _on_stomp_area_body_entered(body: Node2D) -> void:
-	if body is CharacterBody2D and body.is_in_group("player"):
-		# Only count as stomp if player is falling (moving downward)
-		if body.velocity.y > 0:
-			body.notify_stomp_hit()
-			take_stomp_damage()
+	if not (body is CharacterBody2D and body.is_in_group("player")):
+		return
+	# Position-based stomp check: the player must be above this enemy at the
+	# moment of overlap. Using velocity.y > 0 is unreliable because
+	# move_and_slide can zero the velocity on landing before Area2D signals
+	# fire, causing the stomp to be missed inconsistently (Godot physics
+	# resolution order depends on relative fall speed and geometry).
+	if body.global_position.y < global_position.y:
+		body.notify_stomp_hit()
+		take_stomp_damage(1)  # inherited from BaseEnemy
 
 
 func _physics_process(delta: float) -> void:
@@ -44,8 +49,3 @@ func _physics_process(delta: float) -> void:
 	# Reverse on wall collision
 	if is_on_wall():
 		_direction *= -1.0
-
-
-## Called when player stomps on this enemy
-func take_stomp_damage() -> void:
-	queue_free()

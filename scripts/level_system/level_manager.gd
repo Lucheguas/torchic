@@ -80,8 +80,20 @@ func load_floor(floor_id: int) -> void:
 	current_floor_id = floor_id
 	var config = get_current_floor_config()
 	if config == null:
-		push_error("LevelManager: No config found for floor_id %d" % floor_id)
-		return
+		# Requested floor not registered. Fall back to floor 1 and rewind saved
+		# progress so the save file stays consistent with what actually exists.
+		push_warning(
+			"LevelManager: No config for floor_id %d; falling back to floor 1."
+			% floor_id
+		)
+		current_floor_id = 1
+		if floor_progress:
+			floor_progress.current_floor = 1
+			floor_progress.save_to_disk()
+		config = get_current_floor_config()
+		if config == null:
+			push_error("LevelManager: Fallback floor 1 also has no config; aborting load.")
+			return
 	if not scene_loader.scene_loaded.is_connected(_on_scene_loaded):
 		scene_loader.scene_loaded.connect(_on_scene_loaded)
 	scene_loader.request_load(config.scene_path)

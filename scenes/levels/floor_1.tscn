@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/level_system/checkpoint_marker.tscn" id="2_checkpoint"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://scripts/level_system/data/sublevel_config.gd" id="4_sublevel_cfg"]
 [ext_resource type="PackedScene" path="res://scenes/enemy_basic.tscn" id="5_enemy"]
 [ext_resource type="Script" path="res://scripts/kill_zone.gd" id="6_killzone"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/bliss.jpg" id="7_bg"]
 
 [sub_resource type="RectangleShape2D" id="ground_main"]
 size = Vector2(2100, 32)
@@ -32,6 +33,17 @@ has_time_limit = false
 time_limit_seconds = 0.0
 
 [node name="Floor1" type="Node2D"]
+
+[node name="Background" type="ParallaxBackground" parent="."]
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="Background"]
+motion_scale = Vector2(0.2, 0.2)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="Background/ParallaxLayer"]
+centered = false
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("7_bg")
 
 [node name="Environment" type="Node2D" parent="."]
 

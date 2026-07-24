@@ -40,23 +40,11 @@ signal stomp_bounced()
 
 # --- Internal State Variables ---
 
-## Speed multiplier from player level (1.0 at level 1, up to 1.7 at level 15)
-var _base_speed: float = 1.0
-
-## Speed bonus from equipment (0.0 to 0.5)
-var _speed_modifier: float = 0.0
-
-## Jump height bonus from equipment (0.0 to 1.0, e.g. 0.05 = +5%)
-var _jump_height_bonus: float = 0.0
-
-## Whether double jump is enabled (from equipment)
-var _double_jump_enabled: bool = false
+## Composition: equipment- and level-derived modifiers with clamped setters.
+var _modifiers: ModifierStack = ModifierStack.new()
 
 ## Whether the player has used their double jump this air cycle
 var _has_double_jumped: bool = false
-
-## Stomp bounce multiplier from equipment (1.0 to 2.0)
-var _stomp_bounce_multiplier: float = 1.0
 
 ## Coyote time countdown timer
 var _coyote_timer: float = 0.0
@@ -97,27 +85,27 @@ func _ready() -> void:
 
 ## Sets the level-based speed multiplier. Clamped to [1.0, 1.7].
 func set_base_speed(value: float) -> void:
-	_base_speed = clampf(value, 1.0, 1.7)
+	_modifiers.set_base_speed(value)
 
 
 ## Sets the equipment speed bonus. Clamped to [0.0, 0.5].
 func set_speed_modifier(value: float) -> void:
-	_speed_modifier = clampf(value, 0.0, 0.5)
+	_modifiers.set_speed_modifier(value)
 
 
 ## Sets the jump height bonus percentage. Clamped to [0.0, 1.0].
 func set_jump_height_bonus(percent: float) -> void:
-	_jump_height_bonus = clampf(percent, 0.0, 1.0)
+	_modifiers.set_jump_height_bonus(percent)
 
 
 ## Enables or disables double jump capability.
 func set_double_jump_enabled(enabled: bool) -> void:
-	_double_jump_enabled = enabled
+	_modifiers.set_double_jump_enabled(enabled)
 
 
 ## Sets the stomp bounce multiplier. Clamped to [1.0, 2.0].
 func set_stomp_bounce_multiplier(mult: float) -> void:
-	_stomp_bounce_multiplier = clampf(mult, 1.0, 2.0)
+	_modifiers.set_stomp_bounce_multiplier(mult)
 
 
 ## Called by enemy collision system when a stomp hit occurs.
@@ -129,7 +117,7 @@ func notify_stomp_hit() -> void:
 
 ## Calculates the effective speed using current instance state.
 func _calculate_effective_speed() -> float:
-	return MovementController.calculate_effective_speed(base_pixel_speed, _base_speed, _speed_modifier)
+	return MovementController.calculate_effective_speed(base_pixel_speed, _modifiers.base_speed, _modifiers.speed_modifier)
 
 # --- Static Utility Functions (Pure, for testing) ---
 
@@ -229,17 +217,17 @@ func _handle_jump(delta: float) -> void:
 	# Can jump if on floor or within coyote time window
 	var can_jump := is_on_floor() or _coyote_timer > 0.0
 	# Double jump in air: allowed once per air cycle when enabled (only when coyote time expired)
-	var can_double_jump := not is_on_floor() and _double_jump_enabled and not _has_double_jumped and _coyote_timer <= 0.0
+	var can_double_jump := not is_on_floor() and _modifiers.double_jump_enabled and not _has_double_jumped and _coyote_timer <= 0.0
 
 	# Jump initiation
 	if Input.is_action_just_pressed("jump"):
 		if can_jump:
-			velocity.y = jump_velocity * (1.0 + _jump_height_bonus)
+			velocity.y = jump_velocity * (1.0 + _modifiers.jump_height_bonus)
 			_coyote_timer = 0.0  # Consume coyote time
 			_is_jumping = true
 			_jump_held_time = 0.0
 		elif can_double_jump:
-			velocity.y = jump_velocity * (1.0 + _jump_height_bonus)
+			velocity.y = jump_velocity * (1.0 + _modifiers.jump_height_bonus)
 			_has_double_jumped = true
 			_is_jumping = true
 			_jump_held_time = 0.0
@@ -275,7 +263,7 @@ func _handle_input_buffer(delta: float) -> void:
 	# If jump pressed in air and can't jump right now, buffer it
 	if Input.is_action_just_pressed("jump") and not is_on_floor() and _coyote_timer <= 0.0:
 		# Only buffer if can't double jump either (or already used it)
-		if not _double_jump_enabled or _has_double_jumped:
+		if not _modifiers.double_jump_enabled or _has_double_jumped:
 			_jump_buffer_timer = input_buffer_duration
 
 	# Countdown the buffer timer each physics frame
@@ -298,9 +286,9 @@ func _handle_stomp_bounce() -> void:
 
 	# Apply bounce velocity (enhanced if jump held)
 	if Input.is_action_pressed("jump"):
-		velocity.y = stomp_bounce_hold_velocity * _stomp_bounce_multiplier
+		velocity.y = stomp_bounce_hold_velocity * _modifiers.stomp_bounce_multiplier
 	else:
-		velocity.y = stomp_bounce_velocity * _stomp_bounce_multiplier
+		velocity.y = stomp_bounce_velocity * _modifiers.stomp_bounce_multiplier
 
 	# Reset state and emit signal
 	_stomp_requested = false
@@ -325,7 +313,7 @@ func _handle_landing() -> void:
 
 		# Consume input buffer: execute buffered jump on landing
 		if _jump_buffer_timer > 0.0:
-			velocity.y = jump_velocity * (1.0 + _jump_height_bonus)
+			velocity.y = jump_velocity * (1.0 + _modifiers.jump_height_bonus)
 			_is_jumping = true
 			_jump_held_time = 0.0
 			_jump_buffer_timer = 0.0

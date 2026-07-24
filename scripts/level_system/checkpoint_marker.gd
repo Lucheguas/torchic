@@ -1,5 +1,5 @@
 class_name CheckpointMarker
-extends Area2D
+extends PlayerTrigger
 ## Area2D node placed in levels to define checkpoint positions.
 ## Activates automatically when the player reaches it, providing visual feedback
 ## via color change and wave animation on the flag sprite.
@@ -20,8 +20,13 @@ const ACTIVE_COLOR := Color(0.2, 0.9, 0.2, 1.0)
 
 
 func _ready() -> void:
+	super._ready()
 	flag_sprite.modulate = INACTIVE_COLOR
-	body_entered.connect(_on_body_entered)
+
+
+func _on_player_entered(_body: Node2D) -> void:
+	if not is_active:
+		activate()
 
 
 func activate() -> void:
@@ -31,8 +36,3 @@ func activate() -> void:
 	flag_sprite.modulate = ACTIVE_COLOR
 	animation_player.play("wave")
 	marker_activated.emit()
-
-
-func _on_body_entered(body: Node2D) -> void:
-	if body is CharacterBody2D and not is_active:
-		activate()
