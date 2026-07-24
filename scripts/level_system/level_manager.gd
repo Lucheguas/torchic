@@ -1,7 +1,7 @@
 extends Node
 ## Autoload singleton that orchestrates the complete level flow:
 ## floor loading, sub-level transitions, entre-nivel zones, checkpoints,
-## camera changes, and persistent save data.
+## and persistent save data.
 ## Access globally via the "LevelManager" autoload name (no class_name needed).
 
 # --- Signals ---
@@ -35,7 +35,6 @@ var _sublevel_scene_root: Node = null
 
 # --- Child Node References ---
 @onready var checkpoint_system: Node = $CheckpointSystem
-@onready var camera_controller: Node = $CameraController
 @onready var transition_animator: Node = $TransitionAnimator
 @onready var scene_loader: Node = $SceneLoader
 
@@ -62,7 +61,6 @@ func _ready() -> void:
 	# Connect permanent subsystem signals
 	scene_loader.load_failed.connect(_on_load_failed)
 	checkpoint_system.checkpoint_activated.connect(_on_checkpoint_activated)
-	camera_controller.camera_ready.connect(_on_camera_ready)
 
 
 # --- Public Methods ---
@@ -210,9 +208,7 @@ func _on_enter_sublevel_transition_finished() -> void:
 	# Hide main level content if needed (player stays)
 	if _current_scene_root:
 		_current_scene_root.visible = false
-	# Apply camera perspective for this sublevel type
-	var cam_type: int = current_sublevel.sublevel_type
-	camera_controller.apply_sublevel_perspective(cam_type)
+	# Camera is intentionally left untouched — it keeps the main-level perspective.
 	# Update state and enable input
 	current_state = GameFlowState.PLAYING_SUBLEVEL
 	set_player_input_enabled(true)
@@ -224,8 +220,7 @@ func _on_exit_sublevel_transition_finished() -> void:
 	if _sublevel_scene_root and is_instance_valid(_sublevel_scene_root):
 		_sublevel_scene_root.queue_free()
 		_sublevel_scene_root = null
-	# Reset camera to main level perspective
-	camera_controller.reset_to_main_level()
+	# Nothing to reset — the camera was never changed.
 	# Restore main level visibility
 	if _current_scene_root:
 		_current_scene_root.visible = true
@@ -253,10 +248,6 @@ func _on_load_failed(path: String, error: String) -> void:
 func _on_checkpoint_activated(checkpoint_id: int, position: Vector2) -> void:
 	floor_progress.active_checkpoints[current_floor_id] = checkpoint_id
 	save_progress()
-
-
-func _on_camera_ready(_sublevel_type) -> void:
-	pass
 
 
 # --- Private Methods ---
@@ -316,17 +307,17 @@ func _on_scene_loaded(packed_scene: PackedScene) -> void:
 	# Find player reference
 	player_ref = get_tree().get_first_node_in_group("player") as CharacterBody2D
 
-	# Setup camera controller with the player's camera
+	# Ensure the player has a current Camera2D (create one if absent)
 	if player_ref:
 		var camera := player_ref.get_node_or_null("Camera2D") as Camera2D
+		if camera == null:
+			camera = Camera2D.new()
+			camera.name = "Camera2D"
+			player_ref.add_child(camera)
 		if camera:
-			camera_controller.setup_camera(camera)
+			camera.make_current()
 		else:
-			var new_camera := Camera2D.new()
-			new_camera.name = "Camera2D"
-			player_ref.add_child(new_camera)
-			new_camera.make_current()
-			camera_controller.setup_camera(new_camera)
+			push_error("LevelManager: Could not locate or create a Camera2D on the player; existing player nodes left intact")
 
 	# Initialize checkpoint system with level bounds
 	var config = get_current_floor_config()
