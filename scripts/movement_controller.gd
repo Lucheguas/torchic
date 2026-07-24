@@ -81,10 +81,17 @@ var _previous_velocity_y: float = 0.0
 
 # --- Animation State ---
 var walk_time: float = 0.0
+var _base_sprite_scale: Vector2 = Vector2.ONE
 const BOB_SPEED = 14.0
 const BOB_AMOUNT = 3.0
 const TILT_AMOUNT = 0.05
 const SQUASH_AMOUNT = 0.03
+
+
+func _ready() -> void:
+	# Capture the sprite's scale from the scene so procedural animation
+	# multiplies onto it instead of resetting it to 1.0.
+	_base_sprite_scale = $Sprite2D.scale
 
 # --- Public Setter Methods ---
 
@@ -178,14 +185,14 @@ func _animate_walk(delta: float, direction: float) -> void:
 		walk_time += delta * BOB_SPEED
 		$Sprite2D.position.y = sin(walk_time) * BOB_AMOUNT
 		$Sprite2D.rotation = sin(walk_time) * TILT_AMOUNT
-		$Sprite2D.scale.x = 1.0 + cos(walk_time * 2.0) * SQUASH_AMOUNT
-		$Sprite2D.scale.y = 1.0 - cos(walk_time * 2.0) * SQUASH_AMOUNT
+		$Sprite2D.scale.x = _base_sprite_scale.x * (1.0 + cos(walk_time * 2.0) * SQUASH_AMOUNT)
+		$Sprite2D.scale.y = _base_sprite_scale.y * (1.0 - cos(walk_time * 2.0) * SQUASH_AMOUNT)
 	else:
 		walk_time = 0.0
 		$Sprite2D.position.y = lerp($Sprite2D.position.y, 0.0, 0.2)
 		$Sprite2D.rotation = lerp($Sprite2D.rotation, 0.0, 0.2)
-		$Sprite2D.scale.x = lerp($Sprite2D.scale.x, 1.0, 0.2)
-		$Sprite2D.scale.y = lerp($Sprite2D.scale.y, 1.0, 0.2)
+		$Sprite2D.scale.x = lerp($Sprite2D.scale.x, _base_sprite_scale.x, 0.2)
+		$Sprite2D.scale.y = lerp($Sprite2D.scale.y, _base_sprite_scale.y, 0.2)
 
 # --- Private Handler Methods ---
 

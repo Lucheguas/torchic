@@ -21,6 +21,8 @@ LevelManager="*res://scenes/level_system/level_manager.tscn"
 
 [display]
 
+window/size/viewport_width=1152
+window/size/viewport_height=648
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
