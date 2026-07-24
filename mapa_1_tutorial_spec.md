@@ -148,8 +148,8 @@ Floor1 (Node2D)
 1. **Escala del Personaje:** Sprite escalado a 0.18x, colisión ajustada a CapsuleShape2D(radio=14, alto=48) para ~28x48px efectivos.
 2. **Construcción Geométrica:** StaticBody2D con CollisionShape2D + ColorRect como visual placeholder para cada zona.
 3. **Colocación de Entidades:**
-   * Player instanciado en Zona 1 (x=100, y=570) con Camera2D hija.
-   * TransitionTrigger `SUBLEVEL` en Zona 4 (entrada a subnivel chase).
+   * Player instanciado en Zona 1 (x=100, y=570) con `Camera2D` hija estándar que sigue al jugador (zoom `Vector2(1, 1)`, offset `Vector2(0, 0)`, rotación `0.0`, sin cambios de perspectiva).
+   * TransitionTrigger `SUBLEVEL` en Zona 4 (entrada a subnivel).
    * TransitionTrigger `NEXT_FLOOR` en Zona 6 (final del piso).
    * CheckpointMarkers en Zonas 3 y 5.
 4. **Enemigos:** `enemy_basic.tscn` con patrulla horizontal y detección de stomp via Area2D.

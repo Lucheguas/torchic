@@ -1,15 +1,13 @@
 class_name SubLevelConfig
 extends Resource
 ## Configuration resource for a single sub-level within a floor.
-## Defines the sub-level type, scene path, transition style, and time limit settings.
+## Defines the scene path, transition style, and time limit settings.
 
-# --- Local Enums (will reference CameraController.SubLevelType and TransitionAnimator.TransitionType once those scripts exist) ---
-enum SubLevelType { CHASE, INFILTRATION, PRECISION_AIMING, ENVIRONMENTAL_PUZZLE }
+# --- Local Enums (will reference TransitionAnimator.TransitionType once that script exists) ---
 enum TransitionType { DOOR, PIPE, DATA_PORTAL }
 
 # --- Exports ---
 @export var sublevel_id: String = ""
-@export var sublevel_type: SubLevelType = SubLevelType.CHASE
 @export var scene_path: String = ""
 @export var transition_type: TransitionType = TransitionType.DOOR
 @export var has_time_limit: bool = false

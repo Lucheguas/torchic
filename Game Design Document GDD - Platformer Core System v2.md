@@ -11,7 +11,7 @@
 ### **1.2. Caídas al Vacío, Checkpoints y Muerte**
 
 * **Checkpoints en Niveles Principales:** Cada mapa principal se divide dinámicamente en tercios. Se fijará un checkpoint automático al cumplir el **33%** y el **66%** de la distancia del mapa. Si el personaje cae al vacío o muere en el tramo principal, reaparecerá en el checkpoint activo más cercano.  
-* **Checkpoints en Subniveles con Cambio de Cámara:**  
+* **Checkpoints en Subniveles:**  
   * Se coloca un checkpoint de entrada justo antes de acceder a la transición del subnivel.  
   * Se coloca un checkpoint de salida inmediatamente después de completar el subnivel.  
   * **Muerte dentro del Subnivel:** Al caer al vacío o morir por trampas/artefactos dentro de un subnivel (dado que son secciones cortas e intensas), el jugador reaparece al inicio del subnivel correspondiente, sin perder el progreso global del piso.
@@ -118,28 +118,32 @@ Si el jugador equipa un Artefacto de Aliado específico en la tienda, el fantasm
 
 ## ---
 
-**5\. Subniveles y Mecánica de Cambio de Cámara**
+**5\. Subniveles**
 
-Para evitar sobrecargar los mapas principales y diversificar el gameplay, los subniveles utilizan transiciones suaves de animación antes de cambiar la perspectiva visual.
+Para evitar sobrecargar los mapas principales y diversificar el gameplay, los subniveles son secciones cortas e intensas que se cargan como escenas independientes y se enlazan al flujo lineal del piso mediante transiciones suaves.
 
-### **5.1. Transición Visual Cuidada**
+### **5.1. Cámara**
 
-* Al entrar a un subnivel (puerta, tubería o portal de datos), se ejecuta una breve animación de entrada (ejemplo: la cámara rotando gradualmente o un efecto de congelamiento estilo glitch en Pixel Art) que dura 1.5 segundos. Esto evita cualquier salto brusco de encuadre.
+* El juego usa una **cámara 2D estándar** (`Camera2D`) que es hija del `Player` y lo sigue mientras se desplaza. Mantiene siempre zoom `Vector2(1, 1)`, offset `Vector2(0, 0)` y rotación `0.0`, sin cambios de perspectiva. Tanto en los pisos principales como en los subniveles la cámara conserva esta misma perspectiva lateral 2D.
 
-### **5.2. Ideas de Subniveles según Perspectiva**
+### **5.2. Transición Visual Cuidada**
 
-* **Subnivel Tipo Persecución (Cámara Frontal \- Huída estilo Crash Bandicoot):**  
-  * *Mecánica:* Una esfera de piedra masiva o un muro de corrupción digital persigue al jugador desde atrás. El personaje corre hacia la pantalla.  
-  * *Acciones:* El jugador debe esquivar vacíos, saltar sobre vallas o trampas de fuego y recolectar tokens que aparecen en el camino frontal.  
-* **Subnivel de Avance/Infiltración (Cámara Trasera \- Desde la Espalda):**  
-  * *Mecánica:* La cámara se posiciona justo detrás del personaje. El jugador avanza en un pasillo tridimensional con profundidad.  
-  * *Acciones:* Se requiere esquivar obstáculos que vienen de frente o usar la mira para interactuar de forma precisa en la ruta.  
-* **Subnivel de Apuntado y Precisión (Cámara Mixta \+ Uso de Mouse/Proyectiles):**  
-  * *Mecánica:* El personaje permanece en un riel o plataforma fija, y la cámara toma un ángulo de elevación que permite apuntar con el cursor del mouse.  
+* Al entrar a un subnivel (puerta, tubería o portal de datos), se ejecuta una breve animación de entrada (por ejemplo, un efecto de congelamiento estilo glitch en Pixel Art) que dura 1.5 segundos. Esto evita cualquier salto brusco de encuadre.
+
+### **5.3. Ideas de Subniveles**
+
+* **Subnivel Tipo Persecución (Huída estilo Crash Bandicoot):**  
+  * *Mecánica:* Una esfera de piedra masiva o un muro de corrupción digital persigue al jugador desde atrás.  
+  * *Acciones:* El jugador debe esquivar vacíos, saltar sobre vallas o trampas de fuego y recolectar tokens que aparecen en el camino.  
+* **Subnivel de Avance/Infiltración:**  
+  * *Mecánica:* El jugador avanza por un pasillo evitando ser detectado.  
+  * *Acciones:* Se requiere esquivar obstáculos o interactuar de forma precisa en la ruta.  
+* **Subnivel de Apuntado y Precisión:**  
+  * *Mecánica:* El personaje permanece en un riel o plataforma fija y usa el cursor del mouse para apuntar.  
   * *Acciones:* Destruir nodos de datos o proyectiles enemigos en el aire antes de que colisionen con la plataforma móvil.  
-* **Subnivel de Puzzles Ambientales (Cámara Aérea / Top-Down):**  
-  * *Mecánica:* Vista superior que muestra una sala cerrada de circuitos.  
-  * *Acciones:* Mover bloques, presionar interruptores en un tiempo límite para abrir la puerta de salida y regresar al nivel lateral 2D.
+* **Subnivel de Puzzles Ambientales:**  
+  * *Mecánica:* Sala cerrada de circuitos con obstáculos de entorno.  
+  * *Acciones:* Mover bloques, presionar interruptores en un tiempo límite para abrir la puerta de salida y regresar al recorrido lateral 2D.
 
 > ---
 

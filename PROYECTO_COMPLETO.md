@@ -50,7 +50,6 @@ torchic/
 │       ├── scene_loader.gd          # Cargador asíncrono de escenas
 │       ├── checkpoint_system.gd     # Sistema de checkpoints automáticos
 │       ├── checkpoint_marker.gd     # Nodo visual de bandera checkpoint
-│       ├── camera_controller.gd     # Controlador de perspectiva de cámara
 │       ├── transition_animator.gd   # Animaciones de transición (1.5s)
 │       ├── transition_trigger.gd    # Trigger Area2D para transiciones
 │       ├── sublevel_exit_trigger.gd # Trigger de salida de subniveles
@@ -98,6 +97,13 @@ TRANSITION_TO_ENTRE_NIVEL → ENTRE_NIVEL → (siguiente piso)
 - `TRANSITION_TO_ENTRE_NIVEL` — Transición a zona de tienda
 - `ENTRE_NIVEL` — Zona de descanso/tienda entre pisos
 - `RESPAWNING` — Reaparición del jugador tras muerte
+
+### Cámara (Follow_Camera)
+
+La cámara es un nodo `Camera2D` hijo directo del `Player` que sigue al jugador con una
+perspectiva única y constante: zoom `Vector2(1, 1)`, offset `Vector2(0, 0)` y rotación `0.0`.
+No hay cambios de perspectiva por tipo de subnivel; el `LevelManager` solo garantiza que la
+cámara exista y quede activa (`current`) al cargar cada piso.
 
 ---
 
@@ -193,20 +199,6 @@ Cargador asíncrono de escenas usando `ResourceLoader.load_threaded_*`.
 
 ---
 
-### `scripts/level_system/camera_controller.gd`
-**Clase:** `CameraController`
-
-Configura la cámara según el tipo de subnivel:
-
-| Tipo Subnivel | Zoom | Offset | Rotación |
-|---------------|------|--------|----------|
-| CHASE | 1.5x | (0, -100) | 0° |
-| INFILTRATION | 1.2x | (0, -50) | 0° |
-| PRECISION_AIMING | 0.7x | (0, -200) | 0° |
-| ENVIRONMENTAL_PUZZLE | 0.5x | (0, 0) | 0° |
-
----
-
 ### `scripts/level_system/transition_animator.gd`
 **Clase:** `TransitionAnimator`
 
@@ -255,7 +247,6 @@ Catálogo central de todos los pisos. Actualmente registra:
 | Campo | Tipo | Descripción |
 |-------|------|-------------|
 | `sublevel_id` | String | ID único |
-| `sublevel_type` | enum | CHASE / INFILTRATION / PRECISION_AIMING / ENVIRONMENTAL_PUZZLE |
 | `scene_path` | String | Ruta a la escena del subnivel |
 | `transition_type` | enum | DOOR / PIPE / DATA_PORTAL |
 | `has_time_limit` | bool | Si tiene límite de tiempo |
@@ -294,7 +285,6 @@ Player (CharacterBody2D) [script: movement_controller.gd] [group: "player"]
 ```
 LevelManager (Node) [script: level_manager.gd]
 ├── CheckpointSystem (Node) [script: checkpoint_system.gd]
-├── CameraController (Node) [script: camera_controller.gd]
 ├── TransitionAnimator (Node) [script: transition_animator.gd]
 └── SceneLoader (Node) [script: scene_loader.gd]
 ```
@@ -306,7 +296,7 @@ Floor1 (Node2D)
 │   ├── CollisionShape2D (Rect 5000x32)
 │   └── GroundSprite (ColorRect verde)
 ├── Player (instancia de player.tscn) [pos: 100, 500]
-│   └── Camera2D
+│   └── Camera2D (Follow_Camera: zoom (1,1), offset (0,0), rotación 0.0)
 ├── Checkpoint1 (instancia checkpoint_marker.tscn) [pos: 1650, 580]
 ├── Checkpoint2 (instancia checkpoint_marker.tscn) [pos: 3300, 580]
 ├── SublevelEntry (TransitionTrigger) [pos: 2500, 550] → chase_1
@@ -369,7 +359,7 @@ Según el GDD, los siguientes sistemas aún no están implementados:
 | ✅ Movimiento jugador | Completo | Con coyote, buffer, variable jump, stomp bounce |
 | ✅ Sistema de niveles | Completo | Carga, transiciones, máquina de estados |
 | ✅ Checkpoints | Completo | Automáticos al 33%/66%, soporte subniveles |
-| ✅ Cámara dinámica | Completo | Perspectivas por tipo de subnivel |
+| ✅ Cámara | Completo | `Camera2D` estándar que sigue al jugador (sin cambios de perspectiva) |
 | ✅ Transiciones | Completo | Animadas 1.5s con tipos visuales |
 | ✅ Guardado/Carga | Completo | FloorProgressData persistente |
 | ✅ Entre-nivel | Funcional | Zona básica con trigger de salida |
@@ -395,6 +385,6 @@ Según el GDD, los siguientes sistemas aún no están implementados:
 
 ## Resumen del Diseño del Juego
 
-**Torchic** es un platformer 2D con progresión RPG de 15 pisos. El jugador avanza por niveles laterales con subniveles de perspectiva variada (persecución frontal, infiltración, puntería, puzzles top-down). Entre cada piso hay una zona de descanso con tienda. Un fantasmita aliado acompaña al jugador y puede equiparse con artefactos de combate.
+**Torchic** es un platformer 2D con progresión RPG de 15 pisos. El jugador avanza por niveles laterales lineales con subniveles temáticos (persecución, infiltración, puntería, puzzles), todos con una cámara 2D estándar que sigue al jugador sin cambios de perspectiva. Entre cada piso hay una zona de descanso con tienda. Un fantasmita aliado acompaña al jugador y puede equiparse con artefactos de combate.
 
 La economía se divide en EXP (por combate, sube stats) y Tokens (exploración, compra equipo). Los enemigos escalan en 15 tiers con Armadura M como mecánica de combate obligatorio melee.
