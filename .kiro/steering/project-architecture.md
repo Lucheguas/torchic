@@ -33,6 +33,8 @@ El proyecto sí usa POO, con estas convenciones:
 - Herencia solo cuando hay 2+ subclases que comparten lógica no trivial. Ejemplos válidos:
   - `PlayerTrigger` (Area2D) → `TransitionTrigger`, `SublevelExitTrigger`, `CheckpointMarker`
   - `BaseEnemy` (CharacterBody2D) → `EnemyBasic` (y futuros enemigos)
+
+La cámara del jugador es una `Camera2D` hija del Player con zoom `(1, 1)`, offset `(0, 0)` y rotación `0`; sigue al jugador sin cambios de perspectiva (no hay `CameraController`).
 - La clase base implementa el patrón compartido; las subclases sobreescriben métodos virtuales (`_on_player_entered`, `_update_behavior`).
 - Nombres de métodos virtuales usan prefijo `_` para indicar "override point".
 
@@ -73,8 +75,17 @@ El proyecto sí usa POO, con estas convenciones:
 
 | Clase | Archivo | Base | Rol |
 |---|---|---|---|
-| `BaseEnemy` | `scripts/enemies/base_enemy.gd` | `CharacterBody2D` | Clase base con `hp: int` y `take_stomp_damage(amount)`. `queue_free()` cuando `hp <= 0`. |
+| `BaseEnemy` | `scripts/enemies/base_enemy.gd` | `CharacterBody2D` | Clase base con `hp: int` y `take_damage(amount)`. `queue_free()` cuando `hp <= 0`. |
 | `EnemyBasic` | `scripts/enemy_basic.gd` | `BaseEnemy` | Enemigo Tier 0.5 del tutorial. Patrulla horizontal entre dos límites. Detección de stomp desde arriba vía `StompArea` (Area2D). |
+
+### Armas
+
+| Clase | Archivo | Base | Rol |
+|---|---|---|---|
+| `MeleeWeapon` | `scripts/weapons/melee_weapon.gd` | `Resource` | Datos serializables de un arma cuerpo a cuerpo: `weapon_name` y `damage`. Sin lógica activa. |
+| `MeleeAttack` | `scripts/weapons/melee_attack.gd` | `Area2D` | Hitbox del jugador que se activa brevemente al atacar. Se orienta según el `flip_h` del sprite, aplica `weapon.damage` vía `BaseEnemy.take_damage` y evita golpear al mismo enemigo dos veces por swing. El arma equipada viene del `MeleeWeapon` asignado. |
+
+El jugador (`player.tscn`) tiene un nodo hijo `MeleeAttack` con un `MeleeWeapon` asignado. `MovementController` dispara `$MeleeAttack.trigger(facing)` con la acción de input `attack`.
 
 ### Triggers y zonas
 
@@ -90,9 +101,8 @@ El proyecto sí usa POO, con estas convenciones:
 
 | Clase | Archivo | Base | Rol |
 |---|---|---|---|
-| `LevelManager` | `scripts/level_system/level_manager.gd` | `Node` (autoload) | Orquestador global. Estados: `LOADING`, `PLAYING_MAIN_LEVEL`, `TRANSITION_TO_SUBLEVEL`, `PLAYING_SUBLEVEL`, `TRANSITION_TO_MAIN`, `TRANSITION_TO_ENTRE_NIVEL`, `ENTRE_NIVEL`, `RESPAWNING`. Compone `CheckpointSystem`, `CameraController`, `TransitionAnimator`, `SceneLoader`. Fallback a piso 1 si el config del piso pedido no existe. |
+| `LevelManager` | `scripts/level_system/level_manager.gd` | `Node` (autoload) | Orquestador global. Estados: `LOADING`, `PLAYING_MAIN_LEVEL`, `TRANSITION_TO_SUBLEVEL`, `PLAYING_SUBLEVEL`, `TRANSITION_TO_MAIN`, `TRANSITION_TO_ENTRE_NIVEL`, `ENTRE_NIVEL`, `RESPAWNING`. Compone `CheckpointSystem`, `TransitionAnimator`, `SceneLoader`. Fallback a piso 1 si el config del piso pedido no existe. |
 | `CheckpointSystem` | `scripts/level_system/checkpoint_system.gd` | `Node` | Gestiona checkpoints del piso principal y de sublevels. Activa checkpoints por progreso horizontal (33% y 66%). |
-| `CameraController` | `scripts/level_system/camera_controller.gd` | `Node` | Aplica zoom/offset/rotation por tipo de sublevel (CHASE, INFILTRATION, PRECISION_AIMING, ENVIRONMENTAL_PUZZLE). Reset al piso principal restaura zoom `(1, 1)`. |
 | `TransitionAnimator` | `scripts/level_system/transition_animator.gd` | `Node` | Reproduce transiciones visuales (DOOR, etc.) entre escenas. Emite `transition_finished`. |
 | `SceneLoader` | `scripts/level_system/scene_loader.gd` | `Node` | Carga/descarga escenas asíncronamente con `ResourceLoader`. Emite `scene_loaded`, `load_failed`. |
 

@@ -1,29 +1,28 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://c1hm103r8une2"]
 
-[ext_resource type="Script" path="res://scripts/enemy_basic.gd" id="1_enemy"]
+[ext_resource type="Script" uid="uid://tc3ev1vjn6lw" path="res://scripts/enemy_basic.gd" id="1_enemy"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_body"]
 size = Vector2(28, 28)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_stomp"]
-size = Vector2(24, 8)
+size = Vector2(28, 8)
 
-[node name="EnemyBasic" type="CharacterBody2D"]
+[node name="EnemyBasic" type="CharacterBody2D" unique_id=1586021162]
 script = ExtResource("1_enemy")
 
-[node name="Sprite" type="ColorRect" parent="."]
+[node name="Sprite" type="ColorRect" parent="." unique_id=443241279]
 offset_left = -14.0
 offset_top = -28.0
 offset_right = 14.0
-offset_bottom = 0.0
 color = Color(0.8, 0.2, 0.2, 1)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=249946820]
 position = Vector2(0, -14)
 shape = SubResource("RectangleShape2D_body")
 
-[node name="StompArea" type="Area2D" parent="."]
+[node name="StompArea" type="Area2D" parent="." unique_id=2033926221]
 
-[node name="StompCollision" type="CollisionShape2D" parent="StompArea"]
+[node name="StompCollision" type="CollisionShape2D" parent="StompArea" unique_id=498865171]
 position = Vector2(0, -30)
 shape = SubResource("RectangleShape2D_stomp")

@@ -42,8 +42,8 @@ are marked optional.
     - Assert that after a floor load with a player present, the player has exactly one `Camera2D` and it is `current` — both when a camera pre-exists and when it must be created
     - **Validates: Requirements 2.5, 3.1, 3.3**
 
-- [ ] 2. Remove SubLevelType and sublevel_type from SubLevelConfig
-  - [ ] 2.1 Strip the camera-bound type from `scripts/level_system/data/sublevel_config.gd`
+- [x] 2. Remove SubLevelType and sublevel_type from SubLevelConfig
+  - [x] 2.1 Strip the camera-bound type from `scripts/level_system/data/sublevel_config.gd`
     - Remove the `enum SubLevelType { ... }` declaration
     - Remove the `@export var sublevel_type: SubLevelType = SubLevelType.CHASE` export
     - Update the stale header comment referencing `CameraController.SubLevelType`
@@ -55,50 +55,50 @@ are marked optional.
     - Assert: valid config returns empty array; empty `sublevel_id` reports floor id; empty/nonexistent `scene_path` reports floor id, sublevel id, and condition; `has_time_limit` true with `time_limit_seconds <= 0` reports invalid time limit
     - **Validates: Requirements 4.4, 4.5, 4.6, 4.7**
 
-- [ ] 3. Checkpoint - Ensure all tests pass, ask the user if questions arise.
+- [x] 3. Checkpoint - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 4. Remove the CameraController component
-  - [ ] 4.1 Remove the CameraController node from `scenes/level_system/level_manager.tscn`
+- [x] 4. Remove the CameraController component
+  - [x] 4.1 Remove the CameraController node from `scenes/level_system/level_manager.tscn`
     - Delete the `[node name="CameraController" type="Node" parent="."]` entry
     - Delete the `[ext_resource ... path="res://scripts/level_system/camera_controller.gd" id="3"]` declaration
     - Update `load_steps` in the scene header accordingly
     - _Requirements: 1.3, 1.4, 1.5_
 
-  - [ ] 4.2 Delete the camera controller script files
+  - [x] 4.2 Delete the camera controller script files
     - Delete `scripts/level_system/camera_controller.gd`
     - Delete `scripts/level_system/camera_controller.gd.uid`
     - _Requirements: 1.1, 1.2_
 
-- [ ] 5. Clean scenes and resources of sublevel_type assignments
-  - [ ] 5.1 Remove `sublevel_type` from `scenes/levels/floor_1.tscn`
+- [x] 5. Clean scenes and resources of sublevel_type assignments
+  - [x] 5.1 Remove `sublevel_type` from `scenes/levels/floor_1.tscn`
     - Delete the `sublevel_type = 0` assignment in the `SubLevelConfig` sub-resource
     - Preserve `sublevel_id`, `scene_path`, `transition_type`, `has_time_limit`, `time_limit_seconds`
     - _Requirements: 5.1, 5.3, 5.4_
 
-  - [ ] 5.2 Remove `sublevel_type` from `resources/level_registry.tres`
+  - [x] 5.2 Remove `sublevel_type` from `resources/level_registry.tres`
     - Delete every `sublevel_type = N` assignment across all `SubLevelConfig` sub-resources
     - Preserve all other `SubLevelConfig` fields unchanged
     - _Requirements: 5.2, 5.3, 5.4_
 
-- [ ] 6. Update project documentation
-  - [ ] 6.1 Update `PROYECTO_COMPLETO.md`
+- [x] 6. Update project documentation
+  - [x] 6.1 Update `PROYECTO_COMPLETO.md`
     - Remove `CameraController` / `camera_controller.gd` entries (file tree, script section, node tree)
     - Remove the `sublevel_type` row from the SubLevelConfig field table
     - Describe the Follow_Camera as a `Camera2D` child of the Player with zoom `Vector2(1,1)`, offset `Vector2(0,0)`, rotation `0.0` that follows the player without perspective changes
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-  - [ ] 6.2 Update `Game Design Document GDD - Platformer Core System v2.md` and `mapa_1_tutorial_spec.md`
+  - [x] 6.2 Update `Game Design Document GDD - Platformer Core System v2.md` and `mapa_1_tutorial_spec.md`
     - Remove descriptions of the camera-switching mechanic and the `CameraController` component
     - Remove `sublevel_type` / `SubLevelType` from any SubLevelConfig field descriptions
     - _Requirements: 6.1, 6.2, 6.3, 6.4_
 
-- [ ] 7. Verify project integrity
+- [x] 7. Verify project integrity
   - [ ]* 7.1 Write a static check test for removed symbols
     - **Property 5: No dangling references**
     - Assert no references to `CameraController`, `camera_controller`, `SubLevelType`, `sublevel_type`, `apply_sublevel_perspective`, `reset_to_main_level`, `setup_camera`, `camera_ready`, `camera_reset`, `CAMERA_CONFIGS`, or `get_perspective_for_type` remain under `scripts/` and `scenes/`
     - **Validates: Requirements 1.1, 1.3, 1.4, 2.1, 2.2, 2.6, 4.1, 4.2, 7.1**
 
-- [ ] 8. Final checkpoint - Ensure all tests pass, ask the user if questions arise.
+- [x] 8. Final checkpoint - Ensure all tests pass, ask the user if questions arise.
 
 ## Notes
 

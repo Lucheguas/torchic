@@ -51,16 +51,28 @@ func _ready() -> void:
 	else:
 		push_warning("LevelManager: level_registry.tres not found at " + registry_path)
 
-	# Load floor progress (creates new instance if no save exists)
+	# Start every run from scratch: ignore any saved progress on boot so testing
+	# always begins at floor 1 with default state. start_game(true) can still load
+	# the save explicitly for a future "continue" feature.
 	var fpd_script = load("res://scripts/level_system/data/floor_progress_data.gd")
 	if fpd_script:
-		floor_progress = fpd_script.load_from_disk()
+		floor_progress = fpd_script.new()
 	else:
 		push_error("LevelManager: Could not load FloorProgressData script")
 
 	# Connect permanent subsystem signals
 	scene_loader.load_failed.connect(_on_load_failed)
 	checkpoint_system.checkpoint_activated.connect(_on_checkpoint_activated)
+
+
+## Standalone-scene bootstrap (boot F6, or a floor scene added directly to the
+## tree): retries every frame until a player-bearing scene the manager did not
+## load appears, then arms the death pipeline once. Self-limiting — becomes a
+## no-op as soon as _current_scene_root is set (by this bootstrap or by a normal
+## SceneLoader load).
+func _physics_process(_delta: float) -> void:
+	if _current_scene_root == null:
+		_bootstrap_standalone_scene()
 
 
 # --- Public Methods ---
@@ -159,6 +171,7 @@ func exit_entre_nivel() -> void:
 
 func handle_player_death() -> void:
 	if not player_ref:
+		push_error("LevelManager: handle_player_death sin player_ref; la muerte se ignoró.")
 		return
 	current_state = GameFlowState.RESPAWNING
 	set_player_input_enabled(false)
@@ -210,6 +223,55 @@ func _setup_player_and_camera() -> void:
 		camera.name = "Camera2D"
 		player_ref.add_child(camera)
 	camera.make_current()
+
+
+## Connects the level nodes that both the SceneLoader path and the standalone
+## bootstrap need: NEXT_FLOOR transition triggers and checkpoint markers.
+func _wire_level_nodes(root: Node) -> void:
+	var areas := root.find_children("*", "Area2D", true, false)
+	for trigger in areas:
+		if trigger.has_signal("triggered") and trigger.get("target_type") != null:
+			if trigger.target_type == 2:  # NEXT_FLOOR
+				if not trigger.triggered.is_connected(_on_next_floor_triggered):
+					trigger.triggered.connect(_on_next_floor_triggered)
+
+	# CheckpointMarkers self-activate on player contact and emit marker_activated;
+	# connect that so the reached checkpoint becomes the respawn point.
+	var checkpoint_markers: Array = []
+	for marker in areas:
+		if marker.has_method("activate") and marker.has_signal("marker_activated"):
+			checkpoint_markers.append(marker)
+			if not marker.marker_activated.is_connected(_on_checkpoint_marker_reached):
+				marker.marker_activated.connect(_on_checkpoint_marker_reached.bind(marker))
+	checkpoint_system.checkpoint_markers = checkpoint_markers
+
+
+## Boot F6: the floor scene is already in the tree but the manager never loaded
+## it, so player_ref would stay null and every death would be lost silently.
+## Runs once at startup so initialize_for_level() captures the player's spawn
+## position (not a later fall position).
+func _bootstrap_standalone_scene() -> void:
+	if _current_scene_root != null:
+		return
+	var player := get_tree().get_first_node_in_group("player") as CharacterBody2D
+	if player == null:
+		return
+	# The floor scene root owns the instanced player. Prefer it over
+	# get_tree().current_scene, which is null when the scene is added to the tree
+	# directly (test harness) instead of loaded as the active scene.
+	var scene_root: Node = player.owner if player.owner != null else get_tree().current_scene
+	if scene_root == null:
+		return
+	_current_scene_root = scene_root
+	_setup_player_and_camera()
+	var config = get_current_floor_config()
+	if config:
+		checkpoint_system.initialize_for_level(
+			player_ref.global_position, 0.0, config.map_length_px
+		)
+	_wire_level_nodes(_current_scene_root)
+	current_state = GameFlowState.PLAYING_MAIN_LEVEL
+	floor_started.emit(current_floor_id)
 
 
 # --- Sublevel Transition Callbacks (DISABLED FOR TESTING) ---
@@ -348,29 +410,8 @@ func _on_scene_loaded(packed_scene: PackedScene) -> void:
 		var map_end_x: float = config.map_length_px
 		checkpoint_system.initialize_for_level(start_pos, map_start_x, map_end_x)
 
-	# Find and connect TransitionTrigger nodes (Area2D nodes with triggered signal)
-	var triggers := _current_scene_root.find_children("*", "Area2D", true, false)
-	for trigger in triggers:
-		if trigger.has_signal("triggered") and trigger.get("target_type") != null:
-			if trigger.target_type == 2:  # NEXT_FLOOR
-				if not trigger.triggered.is_connected(_on_next_floor_triggered):
-					trigger.triggered.connect(_on_next_floor_triggered)
-			#elif trigger.target_type == 0:  # SUBLEVEL — DISABLED FOR TESTING
-			#	if not trigger.triggered.is_connected(enter_sublevel):
-			#		trigger.triggered.connect(enter_sublevel)
-
-	# Find CheckpointMarker nodes and register with checkpoint_system.
-	# Each marker self-activates on player contact (PlayerTrigger) and emits
-	# marker_activated; connect that so the reached checkpoint becomes the
-	# respawn point.
-	var markers := _current_scene_root.find_children("*", "Area2D", true, false)
-	var checkpoint_markers: Array = []
-	for marker in markers:
-		if marker.has_method("activate") and marker.has_signal("marker_activated"):
-			checkpoint_markers.append(marker)
-			if not marker.marker_activated.is_connected(_on_checkpoint_marker_reached):
-				marker.marker_activated.connect(_on_checkpoint_marker_reached.bind(marker))
-	checkpoint_system.checkpoint_markers = checkpoint_markers
+	# Wire triggers and checkpoint markers (shared with the standalone bootstrap).
+	_wire_level_nodes(_current_scene_root)
 
 	# Transition to playing state and emit signal
 	current_state = GameFlowState.PLAYING_MAIN_LEVEL

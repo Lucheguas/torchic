@@ -32,9 +32,15 @@ func preload_scene(scene_path: String) -> void:
 	ResourceLoader.load_threaded_request(scene_path)
 
 
-## Safely unloads a scene by calling queue_free() on its root node.
+## Safely unloads a scene. Removes it from the tree immediately (so its nodes
+## leave their groups this frame) and queues it for deletion. queue_free() alone
+## is deferred, which would leave the old scene's player overlapping the newly
+## loaded one for a frame.
 func unload_scene(scene_root: Node) -> void:
 	if scene_root and is_instance_valid(scene_root):
+		var parent := scene_root.get_parent()
+		if parent:
+			parent.remove_child(scene_root)
 		scene_root.queue_free()
 
 
