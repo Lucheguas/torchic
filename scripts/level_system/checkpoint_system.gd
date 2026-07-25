@@ -63,6 +63,13 @@ func get_respawn_position() -> Vector2:
 	return level_start_position
 
 
+## Sets the respawn point to a checkpoint the player physically reached.
+## Called by LevelManager when a CheckpointMarker emits marker_activated.
+func set_reached_checkpoint(checkpoint_position: Vector2) -> void:
+	active_checkpoint_position = checkpoint_position
+	has_active_checkpoint = true
+
+
 ## Registers entry into a sublevel, saving the entry checkpoint and sublevel start position.
 func enter_sublevel(entry_position: Vector2, sublevel_start: Vector2) -> void:
 	active_checkpoint_position = entry_position

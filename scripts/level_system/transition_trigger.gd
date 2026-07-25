@@ -14,4 +14,7 @@ enum TargetType { SUBLEVEL, ENTRE_NIVEL, NEXT_FLOOR }
 
 
 func _on_player_entered(_body: Node2D) -> void:
+	# DISABLED FOR TESTING: sublevel triggers do nothing
+	if target_type == TargetType.SUBLEVEL:
+		return
 	triggered.emit(self)

@@ -1,6 +1,7 @@
-[gd_scene format=3 uid="uid://blanh1wjccjdm"]
+[gd_scene load_steps=5 format=3 uid="uid://blanh1wjccjdm"]
 
 [ext_resource type="Script" uid="uid://bsxtum5nosacn" path="res://scripts/level_system/transition_trigger.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://bs6hcqyn2v4bb" path="res://scenes/player.tscn" id="2_player"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(800, 32)
@@ -9,6 +10,9 @@ size = Vector2(800, 32)
 size = Vector2(64, 64)
 
 [node name="EntreNivel" type="Node2D" unique_id=1079863320]
+
+[node name="Player" parent="." instance=ExtResource("2_player")]
+position = Vector2(80, 340)
 
 [node name="Ground" type="StaticBody2D" parent="." unique_id=152923964]
 position = Vector2(400, 400)

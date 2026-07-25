@@ -112,29 +112,39 @@ func complete_floor() -> void:
 	scene_loader.request_load(entre_nivel_path)
 
 
-func enter_sublevel(trigger) -> void:
-	if current_state != GameFlowState.PLAYING_MAIN_LEVEL:
-		return
-	current_state = GameFlowState.TRANSITION_TO_SUBLEVEL
-	current_sublevel = trigger.sublevel_config
-	set_player_input_enabled(false)
-	# Register sublevel entry in checkpoint system
-	var sublevel_start_pos := Vector2.ZERO
-	checkpoint_system.enter_sublevel(player_ref.global_position, sublevel_start_pos)
-	# Play enter transition, then continue on transition_finished
-	transition_animator.transition_finished.connect(_on_enter_sublevel_transition_finished, CONNECT_ONE_SHOT)
-	transition_animator.play_enter_transition(trigger.transition_visual)
+# --- SUBLEVEL DISABLED FOR TESTING ---
+#func enter_sublevel(trigger) -> void:
+#	if current_state != GameFlowState.PLAYING_MAIN_LEVEL:
+#		return
+#	current_state = GameFlowState.TRANSITION_TO_SUBLEVEL
+#	current_sublevel = trigger.sublevel_config
+#	set_player_input_enabled(false)
+#	# Register sublevel entry in checkpoint system
+#	var sublevel_start_pos := Vector2.ZERO
+#	checkpoint_system.enter_sublevel(player_ref.global_position, sublevel_start_pos)
+#	# Play enter transition, then continue on transition_finished
+#	transition_animator.transition_finished.connect(_on_enter_sublevel_transition_finished, CONNECT_ONE_SHOT)
+#	transition_animator.play_enter_transition(trigger.transition_visual)
+
+## Stub — sublevel entry disabled for testing
+func enter_sublevel(_trigger) -> void:
+	pass
 
 
+# --- SUBLEVEL DISABLED FOR TESTING ---
+#func complete_sublevel() -> void:
+#	if current_state != GameFlowState.PLAYING_SUBLEVEL:
+#		return
+#	current_state = GameFlowState.TRANSITION_TO_MAIN
+#	set_player_input_enabled(false)
+#	# Play exit transition, then continue on transition_finished
+#	var trans_type: int = current_sublevel.transition_type
+#	transition_animator.transition_finished.connect(_on_exit_sublevel_transition_finished, CONNECT_ONE_SHOT)
+#	transition_animator.play_exit_transition(trans_type)
+
+## Stub — sublevel completion disabled for testing
 func complete_sublevel() -> void:
-	if current_state != GameFlowState.PLAYING_SUBLEVEL:
-		return
-	current_state = GameFlowState.TRANSITION_TO_MAIN
-	set_player_input_enabled(false)
-	# Play exit transition, then continue on transition_finished
-	var trans_type: int = current_sublevel.transition_type
-	transition_animator.transition_finished.connect(_on_exit_sublevel_transition_finished, CONNECT_ONE_SHOT)
-	transition_animator.play_exit_transition(trans_type)
+	pass
 
 
 func exit_entre_nivel() -> void:
@@ -187,54 +197,69 @@ func set_player_input_enabled(enabled: bool) -> void:
 			player_ref.set_physics_process(true)
 
 
-# --- Sublevel Transition Callbacks ---
-
-func _on_enter_sublevel_transition_finished() -> void:
-	# Load and instantiate the sublevel scene
-	if not current_sublevel or current_sublevel.scene_path.is_empty():
-		push_error("LevelManager: No valid sublevel config for enter transition")
-		set_player_input_enabled(true)
-		current_state = GameFlowState.PLAYING_MAIN_LEVEL
+## Resolves player_ref from the "player" group in the current scene and makes
+## sure the player has a current Camera2D (creates one if the scene omitted it).
+## Used by both the main floor load and the entre_nivel load.
+func _setup_player_and_camera() -> void:
+	player_ref = get_tree().get_first_node_in_group("player") as CharacterBody2D
+	if not player_ref:
 		return
-	var sublevel_packed := load(current_sublevel.scene_path) as PackedScene
-	if not sublevel_packed:
-		push_error("LevelManager: Failed to load sublevel scene: " + current_sublevel.scene_path)
-		set_player_input_enabled(true)
-		current_state = GameFlowState.PLAYING_MAIN_LEVEL
-		return
-	# Instantiate sublevel scene
-	_sublevel_scene_root = sublevel_packed.instantiate()
-	get_tree().current_scene.add_child(_sublevel_scene_root)
-	# Hide main level content if needed (player stays)
-	if _current_scene_root:
-		_current_scene_root.visible = false
-	# Camera is intentionally left untouched — it keeps the main-level perspective.
-	# Update state and enable input
-	current_state = GameFlowState.PLAYING_SUBLEVEL
-	set_player_input_enabled(true)
-	sublevel_entered.emit(current_sublevel)
+	var camera := player_ref.get_node_or_null("Camera2D") as Camera2D
+	if camera == null:
+		camera = Camera2D.new()
+		camera.name = "Camera2D"
+		player_ref.add_child(camera)
+	camera.make_current()
 
 
-func _on_exit_sublevel_transition_finished() -> void:
-	# Unload sublevel scene
-	if _sublevel_scene_root and is_instance_valid(_sublevel_scene_root):
-		_sublevel_scene_root.queue_free()
-		_sublevel_scene_root = null
-	# Nothing to reset — the camera was never changed.
-	# Restore main level visibility
-	if _current_scene_root:
-		_current_scene_root.visible = true
-	# Exit sublevel in checkpoint system
-	checkpoint_system.exit_sublevel(player_ref.global_position if player_ref else Vector2.ZERO)
-	# Mark sublevel as completed in progress data
-	if current_sublevel:
-		floor_progress.mark_sublevel_completed(current_floor_id, current_sublevel.sublevel_id)
-	# Re-enable input and restore state
-	set_player_input_enabled(true)
-	var completed_sublevel = current_sublevel
-	current_sublevel = null
-	current_state = GameFlowState.PLAYING_MAIN_LEVEL
-	sublevel_completed.emit(completed_sublevel)
+# --- Sublevel Transition Callbacks (DISABLED FOR TESTING) ---
+
+#func _on_enter_sublevel_transition_finished() -> void:
+#	# Load and instantiate the sublevel scene
+#	if not current_sublevel or current_sublevel.scene_path.is_empty():
+#		push_error("LevelManager: No valid sublevel config for enter transition")
+#		set_player_input_enabled(true)
+#		current_state = GameFlowState.PLAYING_MAIN_LEVEL
+#		return
+#	var sublevel_packed := load(current_sublevel.scene_path) as PackedScene
+#	if not sublevel_packed:
+#		push_error("LevelManager: Failed to load sublevel scene: " + current_sublevel.scene_path)
+#		set_player_input_enabled(true)
+#		current_state = GameFlowState.PLAYING_MAIN_LEVEL
+#		return
+#	# Instantiate sublevel scene
+#	_sublevel_scene_root = sublevel_packed.instantiate()
+#	get_tree().current_scene.add_child(_sublevel_scene_root)
+#	# Hide main level content if needed (player stays)
+#	if _current_scene_root:
+#		_current_scene_root.visible = false
+#	# Camera is intentionally left untouched — it keeps the main-level perspective.
+#	# Update state and enable input
+#	current_state = GameFlowState.PLAYING_SUBLEVEL
+#	set_player_input_enabled(true)
+#	sublevel_entered.emit(current_sublevel)
+
+
+#func _on_exit_sublevel_transition_finished() -> void:
+#	# Unload sublevel scene
+#	if _sublevel_scene_root and is_instance_valid(_sublevel_scene_root):
+#		_sublevel_scene_root.queue_free()
+#		_sublevel_scene_root = null
+#	# Nothing to reset — the camera was never changed.
+#	# Restore main level visibility
+#	if _current_scene_root:
+#		_current_scene_root.visible = true
+#	# Exit sublevel in checkpoint system
+#	checkpoint_system.exit_sublevel(player_ref.global_position if player_ref else Vector2.ZERO)
+#	# Mark sublevel as completed in progress data
+#	if current_sublevel:
+#		floor_progress.mark_sublevel_completed(current_floor_id, current_sublevel.sublevel_id)
+#	# Re-enable input and restore state
+#	set_player_input_enabled(true)
+#	var completed_sublevel = current_sublevel
+#	current_sublevel = null
+#	current_state = GameFlowState.PLAYING_MAIN_LEVEL
+#	sublevel_completed.emit(completed_sublevel)
 
 
 # --- Signal Handlers (permanent connections) ---
@@ -248,6 +273,12 @@ func _on_load_failed(path: String, error: String) -> void:
 func _on_checkpoint_activated(checkpoint_id: int, position: Vector2) -> void:
 	floor_progress.active_checkpoints[current_floor_id] = checkpoint_id
 	save_progress()
+
+
+## Called when the player reaches a CheckpointMarker. Updates the respawn point
+## so a subsequent death (e.g. falling into a KillZone) returns the player here.
+func _on_checkpoint_marker_reached(marker: Node) -> void:
+	checkpoint_system.set_reached_checkpoint(marker.global_position)
 
 
 # --- Private Methods ---
@@ -277,11 +308,13 @@ func _on_scene_loaded(packed_scene: PackedScene) -> void:
 		get_tree().root.add_child(new_scene)
 		_current_scene_root = new_scene
 		current_state = GameFlowState.ENTRE_NIVEL
+		# The entre_nivel scene embeds its own Player; wire up the reference and camera.
+		_setup_player_and_camera()
 		entre_nivel_entered.emit()
 		# Find and connect exit trigger in entre_nivel scene
 		var exit_triggers := _current_scene_root.find_children("*", "Area2D", true, false)
 		for trigger in exit_triggers:
-			if trigger.has_method("_on_body_entered") and trigger.get("target_type") != null:
+			if trigger.has_signal("triggered") and trigger.get("target_type") != null:
 				if trigger.target_type == 2:  # NEXT_FLOOR
 					if not trigger.triggered.is_connected(_on_entre_nivel_exit_triggered):
 						trigger.triggered.connect(_on_entre_nivel_exit_triggered)
@@ -304,20 +337,8 @@ func _on_scene_loaded(packed_scene: PackedScene) -> void:
 	get_tree().root.add_child(new_scene)
 	_current_scene_root = new_scene
 
-	# Find player reference
-	player_ref = get_tree().get_first_node_in_group("player") as CharacterBody2D
-
-	# Ensure the player has a current Camera2D (create one if absent)
-	if player_ref:
-		var camera := player_ref.get_node_or_null("Camera2D") as Camera2D
-		if camera == null:
-			camera = Camera2D.new()
-			camera.name = "Camera2D"
-			player_ref.add_child(camera)
-		if camera:
-			camera.make_current()
-		else:
-			push_error("LevelManager: Could not locate or create a Camera2D on the player; existing player nodes left intact")
+	# Find player reference and ensure it has a current camera
+	_setup_player_and_camera()
 
 	# Initialize checkpoint system with level bounds
 	var config = get_current_floor_config()
@@ -334,16 +355,21 @@ func _on_scene_loaded(packed_scene: PackedScene) -> void:
 			if trigger.target_type == 2:  # NEXT_FLOOR
 				if not trigger.triggered.is_connected(_on_next_floor_triggered):
 					trigger.triggered.connect(_on_next_floor_triggered)
-			elif trigger.target_type == 0:  # SUBLEVEL
-				if not trigger.triggered.is_connected(enter_sublevel):
-					trigger.triggered.connect(enter_sublevel)
+			#elif trigger.target_type == 0:  # SUBLEVEL — DISABLED FOR TESTING
+			#	if not trigger.triggered.is_connected(enter_sublevel):
+			#		trigger.triggered.connect(enter_sublevel)
 
-	# Find CheckpointMarker nodes and register with checkpoint_system
+	# Find CheckpointMarker nodes and register with checkpoint_system.
+	# Each marker self-activates on player contact (PlayerTrigger) and emits
+	# marker_activated; connect that so the reached checkpoint becomes the
+	# respawn point.
 	var markers := _current_scene_root.find_children("*", "Area2D", true, false)
 	var checkpoint_markers: Array = []
 	for marker in markers:
 		if marker.has_method("activate") and marker.has_signal("marker_activated"):
 			checkpoint_markers.append(marker)
+			if not marker.marker_activated.is_connected(_on_checkpoint_marker_reached):
+				marker.marker_activated.connect(_on_checkpoint_marker_reached.bind(marker))
 	checkpoint_system.checkpoint_markers = checkpoint_markers
 
 	# Transition to playing state and emit signal

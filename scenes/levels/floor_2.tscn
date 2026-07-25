@@ -1,0 +1,415 @@
+[gd_scene load_steps=18 format=3]
+
+[ext_resource type="PackedScene" path="res://scenes/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" path="res://scenes/level_system/checkpoint_marker.tscn" id="2_checkpoint"]
+[ext_resource type="PackedScene" path="res://scenes/level_system/transition_trigger.tscn" id="3_trigger"]
+[ext_resource type="PackedScene" path="res://scenes/enemy_basic.tscn" id="5_enemy"]
+[ext_resource type="Script" path="res://scripts/kill_zone.gd" id="6_killzone"]
+[ext_resource type="Texture2D" path="res://assets/backgrounds/bliss.jpg" id="7_bg"]
+
+[sub_resource type="RectangleShape2D" id="g_500"]
+size = Vector2(500, 32)
+
+[sub_resource type="RectangleShape2D" id="g_250"]
+size = Vector2(250, 32)
+
+[sub_resource type="RectangleShape2D" id="plat"]
+size = Vector2(120, 24)
+
+[sub_resource type="RectangleShape2D" id="pillar_cp"]
+size = Vector2(110, 32)
+
+[sub_resource type="RectangleShape2D" id="wall_tall"]
+size = Vector2(64, 80)
+
+[sub_resource type="RectangleShape2D" id="valley_floor"]
+size = Vector2(1200, 32)
+
+[sub_resource type="RectangleShape2D" id="step_block"]
+size = Vector2(100, 40)
+
+[sub_resource type="RectangleShape2D" id="pit_big"]
+size = Vector2(1000, 32)
+
+[sub_resource type="RectangleShape2D" id="pit_med"]
+size = Vector2(260, 32)
+
+[sub_resource type="RectangleShape2D" id="pit_stair"]
+size = Vector2(900, 32)
+
+[sub_resource type="RectangleShape2D" id="g_meta"]
+size = Vector2(320, 32)
+
+[node name="Floor2" type="Node2D"]
+
+[node name="Background" type="ParallaxBackground" parent="."]
+
+[node name="ParallaxLayer" type="ParallaxLayer" parent="Background"]
+motion_scale = Vector2(0.2, 0.2)
+motion_mirroring = Vector2(1280, 0)
+
+[node name="Sprite2D" type="Sprite2D" parent="Background/ParallaxLayer"]
+centered = false
+scale = Vector2(0.5, 0.5)
+texture = ExtResource("7_bg")
+
+[node name="Environment" type="Node2D" parent="."]
+
+[node name="G1_Start" type="StaticBody2D" parent="Environment"]
+position = Vector2(250, 600)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/G1_Start"]
+shape = SubResource("g_500")
+
+[node name="Visual" type="ColorRect" parent="Environment/G1_Start"]
+offset_left = -250.0
+offset_top = -16.0
+offset_right = 250.0
+offset_bottom = 16.0
+color = Color(0.3, 0.6, 0.2, 1)
+
+[node name="G2_Mid" type="StaticBody2D" parent="Environment"]
+position = Vector2(900, 600)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/G2_Mid"]
+shape = SubResource("g_250")
+
+[node name="Visual" type="ColorRect" parent="Environment/G2_Mid"]
+offset_left = -125.0
+offset_top = -16.0
+offset_right = 125.0
+offset_bottom = 16.0
+color = Color(0.3, 0.6, 0.2, 1)
+
+[node name="G3" type="StaticBody2D" parent="Environment"]
+position = Vector2(1400, 600)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/G3"]
+shape = SubResource("g_250")
+
+[node name="Visual" type="ColorRect" parent="Environment/G3"]
+offset_left = -125.0
+offset_top = -16.0
+offset_right = 125.0
+offset_bottom = 16.0
+color = Color(0.3, 0.6, 0.2, 1)
+
+[node name="PA" type="StaticBody2D" parent="Environment"]
+position = Vector2(630, 512)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/PA"]
+shape = SubResource("plat")
+
+[node name="Visual" type="ColorRect" parent="Environment/PA"]
+offset_left = -60.0
+offset_top = -12.0
+offset_right = 60.0
+offset_bottom = 12.0
+color = Color(0.6, 0.7, 0.85, 1)
+
+[node name="PB" type="StaticBody2D" parent="Environment"]
+position = Vector2(1150, 502)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/PB"]
+shape = SubResource("plat")
+
+[node name="Visual" type="ColorRect" parent="Environment/PB"]
+offset_left = -60.0
+offset_top = -12.0
+offset_right = 60.0
+offset_bottom = 12.0
+color = Color(0.6, 0.7, 0.85, 1)
+
+[node name="GP1" type="StaticBody2D" parent="Environment"]
+position = Vector2(1690, 522)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/GP1"]
+shape = SubResource("plat")
+
+[node name="Visual" type="ColorRect" parent="Environment/GP1"]
+offset_left = -60.0
+offset_top = -12.0
+offset_right = 60.0
+offset_bottom = 12.0
+color = Color(0.6, 0.7, 0.85, 1)
+
+[node name="GP2" type="StaticBody2D" parent="Environment"]
+position = Vector2(1860, 472)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/GP2"]
+shape = SubResource("plat")
+
+[node name="Visual" type="ColorRect" parent="Environment/GP2"]
+offset_left = -60.0
+offset_top = -12.0
+offset_right = 60.0
+offset_bottom = 12.0
+color = Color(0.6, 0.7, 0.85, 1)
+
+[node name="CP_Pillar" type="StaticBody2D" parent="Environment"]
+position = Vector2(2040, 556)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/CP_Pillar"]
+shape = SubResource("pillar_cp")
+
+[node name="Visual" type="ColorRect" parent="Environment/CP_Pillar"]
+offset_left = -55.0
+offset_top = -16.0
+offset_right = 55.0
+offset_bottom = 16.0
+color = Color(0.5, 0.6, 0.75, 1)
+
+[node name="GP3" type="StaticBody2D" parent="Environment"]
+position = Vector2(2200, 502)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/GP3"]
+shape = SubResource("plat")
+
+[node name="Visual" type="ColorRect" parent="Environment/GP3"]
+offset_left = -60.0
+offset_top = -12.0
+offset_right = 60.0
+offset_bottom = 12.0
+color = Color(0.6, 0.7, 0.85, 1)
+
+[node name="GP4" type="StaticBody2D" parent="Environment"]
+position = Vector2(2380, 532)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/GP4"]
+shape = SubResource("plat")
+
+[node name="Visual" type="ColorRect" parent="Environment/GP4"]
+offset_left = -60.0
+offset_top = -12.0
+offset_right = 60.0
+offset_bottom = 12.0
+color = Color(0.6, 0.7, 0.85, 1)
+
+[node name="Valley_Floor" type="StaticBody2D" parent="Environment"]
+position = Vector2(3100, 600)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Valley_Floor"]
+shape = SubResource("valley_floor")
+
+[node name="Visual" type="ColorRect" parent="Environment/Valley_Floor"]
+offset_left = -600.0
+offset_top = -16.0
+offset_right = 600.0
+offset_bottom = 16.0
+color = Color(0.3, 0.6, 0.2, 1)
+
+[node name="Wall_Left" type="StaticBody2D" parent="Environment"]
+position = Vector2(2560, 544)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Wall_Left"]
+shape = SubResource("wall_tall")
+
+[node name="Visual" type="ColorRect" parent="Environment/Wall_Left"]
+offset_left = -32.0
+offset_top = -40.0
+offset_right = 32.0
+offset_bottom = 40.0
+color = Color(0.4, 0.5, 0.7, 1)
+
+[node name="Wall_Right" type="StaticBody2D" parent="Environment"]
+position = Vector2(3640, 544)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Wall_Right"]
+shape = SubResource("wall_tall")
+
+[node name="Visual" type="ColorRect" parent="Environment/Wall_Right"]
+offset_left = -32.0
+offset_top = -40.0
+offset_right = 32.0
+offset_bottom = 40.0
+color = Color(0.4, 0.5, 0.7, 1)
+
+[node name="Step1" type="StaticBody2D" parent="Environment"]
+position = Vector2(2800, 560)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Step1"]
+shape = SubResource("step_block")
+
+[node name="Visual" type="ColorRect" parent="Environment/Step1"]
+offset_left = -50.0
+offset_top = -20.0
+offset_right = 50.0
+offset_bottom = 20.0
+color = Color(0.45, 0.55, 0.72, 1)
+
+[node name="Step2" type="StaticBody2D" parent="Environment"]
+position = Vector2(3400, 560)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Step2"]
+shape = SubResource("step_block")
+
+[node name="Visual" type="ColorRect" parent="Environment/Step2"]
+offset_left = -50.0
+offset_top = -20.0
+offset_right = 50.0
+offset_bottom = 20.0
+color = Color(0.45, 0.55, 0.72, 1)
+
+[node name="S1" type="StaticBody2D" parent="Environment"]
+position = Vector2(3820, 552)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/S1"]
+shape = SubResource("plat")
+
+[node name="Visual" type="ColorRect" parent="Environment/S1"]
+offset_left = -60.0
+offset_top = -12.0
+offset_right = 60.0
+offset_bottom = 12.0
+color = Color(0.6, 0.7, 0.85, 1)
+
+[node name="S2" type="StaticBody2D" parent="Environment"]
+position = Vector2(3990, 492)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/S2"]
+shape = SubResource("plat")
+
+[node name="Visual" type="ColorRect" parent="Environment/S2"]
+offset_left = -60.0
+offset_top = -12.0
+offset_right = 60.0
+offset_bottom = 12.0
+color = Color(0.6, 0.7, 0.85, 1)
+
+[node name="S3" type="StaticBody2D" parent="Environment"]
+position = Vector2(4160, 432)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/S3"]
+shape = SubResource("plat")
+
+[node name="Visual" type="ColorRect" parent="Environment/S3"]
+offset_left = -60.0
+offset_top = -12.0
+offset_right = 60.0
+offset_bottom = 12.0
+color = Color(0.6, 0.7, 0.85, 1)
+
+[node name="S4" type="StaticBody2D" parent="Environment"]
+position = Vector2(4330, 382)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/S4"]
+shape = SubResource("plat")
+
+[node name="Visual" type="ColorRect" parent="Environment/S4"]
+offset_left = -60.0
+offset_top = -12.0
+offset_right = 60.0
+offset_bottom = 12.0
+color = Color(0.6, 0.7, 0.85, 1)
+
+[node name="S5" type="StaticBody2D" parent="Environment"]
+position = Vector2(4500, 342)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/S5"]
+shape = SubResource("plat")
+
+[node name="Visual" type="ColorRect" parent="Environment/S5"]
+offset_left = -60.0
+offset_top = -12.0
+offset_right = 60.0
+offset_bottom = 12.0
+color = Color(0.6, 0.7, 0.85, 1)
+
+[node name="G_Meta" type="StaticBody2D" parent="Environment"]
+position = Vector2(4700, 372)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/G_Meta"]
+shape = SubResource("g_meta")
+
+[node name="Visual" type="ColorRect" parent="Environment/G_Meta"]
+offset_left = -160.0
+offset_top = -16.0
+offset_right = 160.0
+offset_bottom = 16.0
+color = Color(0.3, 0.6, 0.2, 1)
+
+[node name="MetaFlag" type="ColorRect" parent="Environment"]
+offset_left = 4772.0
+offset_top = 236.0
+offset_right = 4788.0
+offset_bottom = 356.0
+color = Color(0.9, 0.8, 0.2, 1)
+
+[node name="Spawners" type="Node2D" parent="."]
+
+[node name="PlayerSpawnPoint" type="Marker2D" parent="Spawners"]
+position = Vector2(100, 560)
+
+[node name="Checkpoint1" parent="Spawners" instance=ExtResource("2_checkpoint")]
+position = Vector2(2040, 516)
+
+[node name="LevelEnd" parent="Spawners" instance=ExtResource("3_trigger")]
+position = Vector2(4700, 320)
+target_type = 2
+
+[node name="Enemies" type="Node2D" parent="."]
+
+[node name="Enemy_Z1a" parent="Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(300, 584)
+patrol_distance = 120.0
+
+[node name="Enemy_Z1b" parent="Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(1150, 490)
+patrol_distance = 30.0
+
+[node name="Enemy_Z3a" parent="Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(2800, 540)
+patrol_distance = 30.0
+
+[node name="Enemy_Z3b" parent="Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(3400, 540)
+patrol_distance = 30.0
+
+[node name="Enemy_Z3c" parent="Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(3000, 584)
+patrol_distance = 80.0
+
+[node name="Enemy_Z3d" parent="Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(3200, 584)
+patrol_distance = 80.0
+
+[node name="Enemy_Z4a" parent="Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(3990, 480)
+patrol_distance = 30.0
+
+[node name="Enemy_Z4b" parent="Enemies" instance=ExtResource("5_enemy")]
+position = Vector2(4330, 370)
+patrol_distance = 30.0
+
+[node name="KillZone_1" type="Area2D" parent="."]
+position = Vector2(630, 760)
+script = ExtResource("6_killzone")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KillZone_1"]
+shape = SubResource("pit_med")
+
+[node name="KillZone_2" type="Area2D" parent="."]
+position = Vector2(1150, 760)
+script = ExtResource("6_killzone")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KillZone_2"]
+shape = SubResource("pit_med")
+
+[node name="KillZone_Big" type="Area2D" parent="."]
+position = Vector2(2000, 800)
+script = ExtResource("6_killzone")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KillZone_Big"]
+shape = SubResource("pit_big")
+
+[node name="KillZone_Stair" type="Area2D" parent="."]
+position = Vector2(4150, 860)
+script = ExtResource("6_killzone")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="KillZone_Stair"]
+shape = SubResource("pit_stair")
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(100, 560)
+
+[node name="Camera2D" type="Camera2D" parent="Player"]
