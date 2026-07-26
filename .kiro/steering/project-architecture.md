@@ -75,15 +75,15 @@ La cámara del jugador es una `Camera2D` hija del Player con zoom `(1, 1)`, offs
 
 | Clase | Archivo | Base | Rol |
 |---|---|---|---|
-| `BaseEnemy` | `scripts/enemies/base_enemy.gd` | `CharacterBody2D` | Clase base con `hp: int` y `take_damage(amount)`. `queue_free()` cuando `hp <= 0`. |
-| `EnemyBasic` | `scripts/enemy_basic.gd` | `BaseEnemy` | Enemigo Tier 0.5 del tutorial. Patrulla horizontal entre dos límites. Detección de stomp desde arriba vía `StompArea` (Area2D). |
+| `BaseEnemy` | `scripts/enemies/base_enemy.gd` | `CharacterBody2D` | Clase base con `hp: int`, `has_armor: bool`, enum `DamageType { STOMP, MELEE }` y `take_damage(amount, type)`. La armadura absorbe el STOMP y se rompe con MELEE (emite `armor_broken`); sin armadura, `queue_free()` cuando `hp <= 0`. Expone `apply_knockback(direction)` (empuje horizontal por tiempo corto vía float timer). |
+| `EnemyBasic` | `scripts/enemy_basic.gd` | `BaseEnemy` | Enemigo Tier 0.5 del tutorial. Patrulla horizontal entre dos límites. Detección de stomp desde arriba vía `StompArea` (Area2D). Tinta su `ColorRect` mientras `has_armor`; el knockback domina sobre la patrulla mientras dura. |
 
 ### Armas
 
 | Clase | Archivo | Base | Rol |
 |---|---|---|---|
 | `MeleeWeapon` | `scripts/weapons/melee_weapon.gd` | `Resource` | Datos serializables de un arma cuerpo a cuerpo: `weapon_name` y `damage`. Sin lógica activa. |
-| `MeleeAttack` | `scripts/weapons/melee_attack.gd` | `Area2D` | Hitbox del jugador que se activa brevemente al atacar. Se orienta según el `flip_h` del sprite, aplica `weapon.damage` vía `BaseEnemy.take_damage` y evita golpear al mismo enemigo dos veces por swing. El arma equipada viene del `MeleeWeapon` asignado. |
+| `MeleeAttack` | `scripts/weapons/melee_attack.gd` | `Area2D` | Hitbox del jugador que se activa brevemente al atacar. Se orienta según el `flip_h` del sprite, aplica `weapon.damage` vía `BaseEnemy.take_damage(amount, MELEE)` y evita golpear al mismo enemigo dos veces por swing. Su alcance (`attack_offset` + ancho del hitbox) supera el rango de muerte por contacto lateral para poder golpear sin morir. Al enemigo que sobrevive el golpe le aplica `apply_knockback`. El arma equipada viene del `MeleeWeapon` asignado. |
 
 El jugador (`player.tscn`) tiene un nodo hijo `MeleeAttack` con un `MeleeWeapon` asignado. `MovementController` dispara `$MeleeAttack.trigger(facing)` con la acción de input `attack`.
 

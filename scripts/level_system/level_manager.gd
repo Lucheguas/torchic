@@ -173,6 +173,11 @@ func handle_player_death() -> void:
 	if not player_ref:
 		push_error("LevelManager: handle_player_death sin player_ref; la muerte se ignoró.")
 		return
+	# Solo se muere jugando. Durante cargas, transiciones o el propio respawn el
+	# flujo está reposicionando al jugador, y un solape suelto (KillZone o
+	# enemigo) lo teletransportaría a un checkpoint a media transición.
+	if not _is_playing():
+		return
 	current_state = GameFlowState.RESPAWNING
 	set_player_input_enabled(false)
 	var respawn_pos: Vector2 = checkpoint_system.get_respawn_position()
@@ -187,6 +192,14 @@ func handle_player_death() -> void:
 	else:
 		current_state = GameFlowState.PLAYING_MAIN_LEVEL
 	player_respawned.emit(respawn_pos)
+
+
+## True while the player has actual control of the character.
+func _is_playing() -> bool:
+	return (
+		current_state == GameFlowState.PLAYING_MAIN_LEVEL
+		or current_state == GameFlowState.PLAYING_SUBLEVEL
+	)
 
 
 func save_progress() -> void:

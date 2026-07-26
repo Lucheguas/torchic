@@ -34,6 +34,7 @@ signal stomp_bounced()
 @export_group("Stomp Bounce")
 @export var stomp_bounce_velocity: float = -350.0
 @export var stomp_bounce_hold_velocity: float = -500.0
+@export var stomp_grace_duration: float = 0.1  ## Contact damage ignored after a stomp
 
 @export_group("Landing")
 @export var landing_velocity_threshold: float = 200.0
@@ -63,6 +64,9 @@ var _jump_held_time: float = 0.0
 
 ## Whether a stomp bounce has been requested this frame
 var _stomp_requested: bool = false
+
+## Countdown during which enemy contact does not kill, armed on every stomp
+var _stomp_grace_timer: float = 0.0
 
 ## Previous frame's vertical velocity (for landing detection)
 var _previous_velocity_y: float = 0.0
@@ -109,9 +113,12 @@ func set_stomp_bounce_multiplier(mult: float) -> void:
 
 
 ## Called by enemy collision system when a stomp hit occurs.
-## Requests a bounce to be applied on the next physics frame.
+## Requests a bounce to be applied on the next physics frame and opens the grace
+## window: an armored enemy survives the stomp, so the player keeps overlapping
+## it while bouncing away and a grazing contact would otherwise read as lethal.
 func notify_stomp_hit() -> void:
 	_stomp_requested = true
+	_stomp_grace_timer = stomp_grace_duration
 
 # --- Private Helper Methods ---
 
@@ -149,7 +156,7 @@ func _physics_process(delta: float) -> void:
 	_handle_horizontal_movement()
 	_handle_jump(delta)
 	_handle_gravity(delta)
-	_handle_stomp_bounce()
+	_handle_stomp_bounce(delta)
 
 	# Store velocity before collision for landing detection
 	_previous_velocity_y = velocity.y
@@ -279,9 +286,12 @@ func _handle_input_buffer(delta: float) -> void:
 
 # --- Stomp Bounce Handler ---
 
-## Handles stomp bounce when a stomp hit has been notified.
-## Applies enhanced bounce if jump button is held.
-func _handle_stomp_bounce() -> void:
+## Handles stomp bounce when a stomp hit has been notified and ticks down the
+## post-stomp grace window. Applies enhanced bounce if jump button is held.
+func _handle_stomp_bounce(delta: float) -> void:
+	if _stomp_grace_timer > 0.0:
+		_stomp_grace_timer -= delta
+
 	if not _stomp_requested:
 		return
 
@@ -331,6 +341,11 @@ func _handle_landing() -> void:
 ## Contacts from above (stomps) are ignored — the enemy's StompArea handles them.
 ## Called immediately after move_and_slide() so slide collisions are available.
 func _check_enemy_contact_damage() -> void:
+	# A stomp just landed: the enemy may have survived it (armor), so ignore the
+	# overlap until the bounce has carried the player clear of it.
+	if _stomp_grace_timer > 0.0:
+		return
+
 	for i in get_slide_collision_count():
 		var collision := get_slide_collision(i)
 		var collider := collision.get_collider()

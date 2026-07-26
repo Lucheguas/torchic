@@ -149,19 +149,27 @@ Si tocas al jugador o creas una variante, la escena debe cumplir el contrato que
 
 ---
 
-## 5. Checklist: nuevo enemigo
+## 5. Checklist: nuevo enemigo y armadura
 
-1. Hereda de **`BaseEnemy`** (`CharacterBody2D`, tiene `hp` y `take_damage(amount)` que hace
-   `queue_free()` al llegar a 0). Declara `class_name`.
-2. La escena del enemigo, si es "stompeable", necesita un hijo **`$StompArea` (Area2D)** y conectar
-   `body_entered` en `_ready()`.
-3. Detección de pisotón **por posición** (jugador por encima), nunca por `velocity.y`. Al recibir el
-   stomp: `body.notify_stomp_hit()` + `take_damage(1)`.
-4. Gravedad leída de `physics/2d/default_gravity`.
-5. Parámetros de patrulla/comportamiento como `@export` (`patrol_speed`, `patrol_distance`, …).
-6. Colocación en el nivel: instanciar la escena del enemigo bajo un nodo agrupador (p. ej.
+1. Hereda de **`BaseEnemy`** (`CharacterBody2D`). Declara `class_name`. La base aporta:
+   - `hp: int` y `has_armor: bool` como `@export`.
+   - `enum DamageType { STOMP, MELEE }`.
+   - `take_damage(amount, type)`: con armadura absorbe el STOMP y **rompe** con MELEE (emite
+     `armor_broken`, no muere); sin armadura resta `hp` y hace `queue_free()` al llegar a 0.
+   - `apply_knockback(direction)`: empuje horizontal breve (float timer, sin nodos `Timer`).
+2. Para un enemigo blindado **no crees subclases ni State Machines**: marca `has_armor = true` en la
+   instancia. Reacciona a `armor_broken` en la subclase para el feedback visual (p. ej. cambiar el
+   color del `ColorRect`); **la base no conoce los nodos hijos de la escena**.
+3. La escena, si es "stompeable", necesita un hijo **`$StompArea` (Area2D)** y conectar
+   `body_entered` en `_ready()`. Detección de pisotón **por posición** (jugador por encima), nunca por
+   `velocity.y`. Al recibir el stomp: `body.notify_stomp_hit()` (el rebote es **incondicional**, la
+   armadura frena el daño, no el rebote) + `take_damage(1, DamageType.STOMP)`.
+4. Si la subclase se mueve, debe **respetar el knockback**: mientras `_knockback_timer > 0` deja que
+   `_knockback_velocity_x` mande sobre la patrulla (ver `EnemyBasic._physics_process`).
+5. Gravedad leída de `physics/2d/default_gravity`.
+6. Parámetros de patrulla/comportamiento como `@export` (`patrol_speed`, `patrol_distance`, …).
+7. Colocación en el nivel: instanciar la escena del enemigo bajo un nodo agrupador (p. ej.
    `Enemies`) y ajustar `position` / exports por instancia (ver `floor_1.tscn`).
-7. Métodos virtuales de override usan prefijo `_` (`_update_behavior`, etc.) si añades una jerarquía.
 
 ---
 
@@ -172,8 +180,13 @@ Si tocas al jugador o creas una variante, la escena debe cumplir el contrato que
   - `monitoring`/`visible` en `false` hasta que se dispara.
   - `trigger(facing)` orienta la hitbox (`position.x`, `scale.x`) según el `flip_h` del sprite y la
     activa durante `attack_duration`.
-  - Aplica `weapon.damage` vía `BaseEnemy.take_damage` y usa `_already_hit` para no golpear al mismo
-    enemigo dos veces por swing.
+  - Aplica `weapon.damage` vía `BaseEnemy.take_damage(amount, MELEE)` y usa `_already_hit` para no
+    golpear al mismo enemigo dos veces por swing.
+  - Al enemigo que **sobrevive** el golpe (blindado al que se le rompió la armadura) le aplica
+    `apply_knockback(signf(scale.x))`.
+- **Alcance:** `attack_offset` + medio ancho del hitbox debe superar el rango de muerte por contacto
+  lateral (jugador cápsula r≈8 + medio cuerpo enemigo ≈14 ⇒ muerte a ~22 px). Hoy `attack_offset =
+  28` y el hitbox mide `28 × 32`, dejando una ventana segura de golpeo real por delante del jugador.
 - El arma equipada se asigna en el Inspector del `$MeleeAttack` del jugador. No crees un sistema de
   inventario/equipamiento hasta que exista un segundo caso real.
 
@@ -215,7 +228,13 @@ Mira `floor_1.tscn` como plantilla. Debe incluir:
   **33 %** y **66 %** del mapa (índices 0 y 1), usando `map_length_px` de la config.
 - **Fin de piso**: un `TransitionTrigger` con `target_type = 2` (NEXT_FLOOR) al final del recorrido.
   Al entrar el jugador, dispara `complete_floor()`.
-- Fondo con `ParallaxBackground`/`ParallaxLayer` si aplica (opcional, estético).
+- **`ClearBackground`**: un `CanvasLayer` (`layer = -100`) con un `ColorRect` a pantalla completa
+  (`anchors_preset = 15`) como primer hijo del piso. **Obligatorio.** En el renderer GL Compatibility
+  las zonas del viewport que el fondo no cubre no se limpian entre frames y el sprite del jugador en
+  movimiento deja un rastro de "cientos de copias". El `ColorRect` fuerza un fondo opaco de pantalla
+  completa cada frame y elimina el artefacto (ver `floor_1.tscn`).
+- Fondo con `ParallaxBackground`/`ParallaxLayer` si aplica (opcional, estético; va **por encima** del
+  `ClearBackground`).
 
 ### 8.2 Registrar el piso (`res://resources/level_registry.tres`)
 Añade un `LevelConfigData` al array `levels` con:

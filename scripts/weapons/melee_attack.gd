@@ -5,7 +5,10 @@ extends Area2D
 
 @export var weapon: MeleeWeapon
 @export var attack_duration: float = 0.15
-@export var attack_offset: float = 22.0  ## Distance in front of the player, in pixels
+## Distance in front of the player, in pixels. Together with the hitbox width it
+## must out-reach the side contact-death range so the player can strike a
+## ground enemy without dying on touch.
+@export var attack_offset: float = 28.0
 
 var _attack_timer: float = 0.0
 var _already_hit: Dictionary = {}  ## Enemies hit during the current swing
@@ -46,4 +49,10 @@ func _on_body_entered(body: Node2D) -> void:
 		if _already_hit.has(body):
 			return
 		_already_hit[body] = true
-		(body as BaseEnemy).take_damage(weapon.damage)
+		var enemy := body as BaseEnemy
+		enemy.take_damage(weapon.damage, BaseEnemy.DamageType.MELEE)
+		# A surviving enemy (its armor just broke) is shoved in the swing
+		# direction so the strike reads as landing and the player gets room for
+		# the follow-up hit. A killed enemy is already gone; skip it.
+		if is_instance_valid(enemy) and not enemy.is_queued_for_deletion():
+			enemy.apply_knockback(signf(scale.x))

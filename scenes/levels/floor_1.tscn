@@ -86,6 +86,15 @@ sources/0 = SubResource("TileSetAtlasSource_unyho")
 
 [node name="Floor1" type="Node2D" unique_id=53742483]
 
+[node name="ClearBackground" type="CanvasLayer" parent="." unique_id=53742484]
+layer = -100
+
+[node name="Fill" type="ColorRect" parent="ClearBackground" unique_id=53742485]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.4, 0.55, 0.75, 1)
+
 [node name="Background" type="ParallaxBackground" parent="." unique_id=1929048545]
 
 [node name="ParallaxLayer" type="ParallaxLayer" parent="Background" unique_id=276728045]
@@ -362,6 +371,7 @@ patrol_distance = 100.0
 [node name="Enemy_Low_2" parent="Enemies" unique_id=1271002956 instance=ExtResource("5_enemy")]
 position = Vector2(3246, 593)
 patrol_distance = 100.0
+has_armor = true
 
 [node name="Enemy_Low_3" parent="Enemies" unique_id=366765665 instance=ExtResource("5_enemy")]
 position = Vector2(3823, 593)

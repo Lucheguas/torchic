@@ -2,7 +2,11 @@ class_name EnemyBasic
 extends BaseEnemy
 ## Basic patrolling enemy (Tier 0.5) for the tutorial level.
 ## Walks left and right between two patrol bounds.
-## Defeated by a single stomp via inherited BaseEnemy.take_stomp_damage.
+## Dies to a single stomp when unarmored; an armored one needs a melee hit first.
+
+## Body tint while armored. The unarmored tint comes from the scene, so the
+## .tscn stays the source of truth for the enemy's normal look.
+const ARMOR_COLOR := Color(0.62, 0.66, 0.72)
 
 @export var patrol_speed: float = 80.0
 @export var patrol_distance: float = 120.0  ## Distance from spawn to each side
@@ -10,11 +14,20 @@ extends BaseEnemy
 var _spawn_position: Vector2
 var _direction: float = 1.0
 var _gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
+var _base_color: Color
 
 
 func _ready() -> void:
 	_spawn_position = global_position
+	_base_color = $Sprite.color
+	if has_armor:
+		$Sprite.color = ARMOR_COLOR
+	armor_broken.connect(_on_armor_broken)
 	$StompArea.body_entered.connect(_on_stomp_area_body_entered)
+
+
+func _on_armor_broken() -> void:
+	$Sprite.color = _base_color
 
 
 func _on_stomp_area_body_entered(body: Node2D) -> void:
@@ -26,14 +39,23 @@ func _on_stomp_area_body_entered(body: Node2D) -> void:
 	# fire, causing the stomp to be missed inconsistently (Godot physics
 	# resolution order depends on relative fall speed and geometry).
 	if body.global_position.y < global_position.y:
+		# The bounce is unconditional: armor stops the damage, not the stomp.
 		body.notify_stomp_hit()
-		take_damage(1)  # inherited from BaseEnemy
+		take_damage(1, DamageType.STOMP)  # inherited from BaseEnemy
 
 
 func _physics_process(delta: float) -> void:
 	# Apply gravity
 	if not is_on_floor():
 		velocity.y += _gravity * delta
+
+	# Knockback overrides patrol until it expires; skip the turn-around logic so
+	# a shoved enemy keeps sliding instead of instantly reversing on the push.
+	if _knockback_timer > 0.0:
+		_knockback_timer -= delta
+		velocity.x = _knockback_velocity_x
+		move_and_slide()
+		return
 
 	# Patrol movement
 	velocity.x = _direction * patrol_speed
