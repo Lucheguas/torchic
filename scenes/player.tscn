@@ -1,6 +1,10 @@
 [gd_scene format=3 uid="uid://bs6hcqyn2v4bb"]
 
-[ext_resource type="Texture2D" uid="uid://c5nj8a0w1x7mr" path="res://personaje-sin-fondo.png" id="1_3vyb7"]
+[ext_resource type="Texture2D" uid="uid://6kponxmcuoyu" path="res://resources/Movement/FRENTE.png" id="6_front"]
+[ext_resource type="Texture2D" uid="uid://dbnuwwj5a3ddd" path="res://resources/Movement/derecha, pie derecho.png" id="7_rda"]
+[ext_resource type="Texture2D" uid="uid://cbovfta6srul0" path="res://resources/Movement/derecha, pie izquierdo.png" id="8_rdb"]
+[ext_resource type="Texture2D" uid="uid://575bn82s77jk" path="res://resources/Movement/izquierda, pie derecho.png" id="9_lda"]
+[ext_resource type="Texture2D" uid="uid://t8f1vc8c6yag" path="res://resources/Movement/izquierda, pie izquierdo.png" id="10_ldb"]
 [ext_resource type="Script" uid="uid://cgc0nu630vkod" path="res://scripts/movement_controller.gd" id="2_script"]
 [ext_resource type="Script" uid="uid://ck8opx73l4ucm" path="res://scripts/weapons/melee_attack.gd" id="3_melee"]
 [ext_resource type="Resource" path="res://resources/weapons/daga_de_madera.tres" id="4_daga"]
@@ -11,15 +15,20 @@ radius = 8.0
 height = 34.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_melee"]
-size = Vector2(15, 14)
+size = Vector2(21.5, 22)
 
 [node name="Player" type="CharacterBody2D" unique_id=516110515 groups=["player"]]
 script = ExtResource("2_script")
+idle_front_texture = ExtResource("6_front")
+run_right_a_texture = ExtResource("7_rda")
+run_right_b_texture = ExtResource("8_rdb")
+run_left_a_texture = ExtResource("9_lda")
+run_left_b_texture = ExtResource("10_ldb")
 
 [node name="Sprite2D" type="Sprite2D" parent="." unique_id=1484951232]
 position = Vector2(-2.9802322e-08, -2)
 scale = Vector2(0.07589821, 0.07581301)
-texture = ExtResource("1_3vyb7")
+texture = ExtResource("6_front")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=427698248]
 shape = SubResource("CapsuleShape2D_o5qli")
@@ -29,10 +38,10 @@ script = ExtResource("3_melee")
 weapon = ExtResource("4_daga")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeAttack" unique_id=1071387016]
-position = Vector2(-0.5, -1)
+position = Vector2(11.25, 6)
 shape = SubResource("RectangleShape2D_melee")
 
 [node name="Blade" type="Sprite2D" parent="MeleeAttack" unique_id=665208430]
-position = Vector2(1.0000019, -1)
-scale = Vector2(0.9444444, 0.9375)
+position = Vector2(11, 6.0000005)
+scale = Vector2(1.3958333, 1.390625)
 texture = ExtResource("5_qlg0r")

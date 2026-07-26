@@ -8,7 +8,7 @@ extends Area2D
 ## Distance in front of the player, in pixels. Together with the hitbox width it
 ## must out-reach the side contact-death range so the player can strike a
 ## ground enemy without dying on touch.
-@export var attack_offset: float = 28.0
+@export var attack_offset: float = 8.0
 
 ## Arc, in radians, that the blade visual sweeps across the swing. Purely
 ## cosmetic: the CollisionShape2D hitbox does not rotate.
@@ -22,7 +22,17 @@ var _already_hit: Dictionary = {}  ## Enemies hit during the current swing
 func _ready() -> void:
 	monitoring = false
 	visible = false
+	_pivot_blade_at_bottom()
 	body_entered.connect(_on_body_entered)
+
+
+## Moves the blade art up so the node origin sits at its bottom edge. The swing
+## then rotates around that base, reading like the weapon balances/pivots from
+## the grip instead of spinning around its center.
+func _pivot_blade_at_bottom() -> void:
+	var sprite := _blade as Sprite2D
+	if sprite != null and sprite.texture != null and sprite.centered:
+		sprite.offset.y = -sprite.texture.get_height() * 0.5
 
 
 ## Activates the hitbox and visual in the given facing direction (+1 right, -1 left).

@@ -55,11 +55,13 @@ func _physics_process(delta: float) -> void:
 		_knockback_timer -= delta
 		velocity.x = _knockback_velocity_x
 		move_and_slide()
+		_check_player_contact()
 		return
 
 	# Patrol movement
 	velocity.x = _direction * patrol_speed
 	move_and_slide()
+	_check_player_contact()
 
 	# Reverse direction at patrol bounds
 	var distance_from_spawn := global_position.x - _spawn_position.x
@@ -71,3 +73,23 @@ func _physics_process(delta: float) -> void:
 	# Reverse on wall collision
 	if is_on_wall():
 		_direction *= -1.0
+
+
+## Kills the player when THIS enemy walks into them from the side or below,
+## which the player's own slide-collision check misses while standing still.
+## Near-vertical contacts are stomps (the player landed on top) and are left to
+## StompArea, so only side/below contacts are lethal here.
+func _check_player_contact() -> void:
+	for i in get_slide_collision_count():
+		var collision := get_slide_collision(i)
+		var collider := collision.get_collider()
+		if collider is CharacterBody2D and (collider as CharacterBody2D).is_in_group("player"):
+			if EnemyBasic.is_side_contact(collision.get_normal().y):
+				LevelManager.handle_player_death()
+				return
+
+
+## True when a body-contact normal means a side/bottom hit (lethal to the
+## player). Near-vertical normals mean the player is on top (a stomp).
+static func is_side_contact(normal_y: float) -> bool:
+	return absf(normal_y) < 0.7
