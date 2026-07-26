@@ -52,7 +52,7 @@ Toda mecánica que lea input debe usar (o añadir) **acciones nombradas**, nunca
 | `move_left` | `A`, `←` | Movimiento horizontal |
 | `move_right` | `D`, `→` | Movimiento horizontal |
 | `jump` | `W`, `↑`, `Espacio` | Salto (variable, coyote, buffer, doble salto) |
-| `attack` | `G` | Dispara `$MeleeAttack.trigger(facing)` |
+| `attack` | `K` | Dispara `$MeleeAttack.trigger(facing)` |
 
 Si añades una mecánica con input nuevo (dash, agacharse, interactuar…):
 1. Registra la acción en `project.godot` → `[input]` (idealmente desde el editor, Project Settings →
@@ -184,6 +184,9 @@ Si tocas al jugador o creas una variante, la escena debe cumplir el contrato que
     golpear al mismo enemigo dos veces por swing.
   - Al enemigo que **sobrevive** el golpe (blindado al que se le rompió la armadura) le aplica
     `apply_knockback(signf(scale.x))`.
+  - El visual `Blade` (Polygon2D hijo) hace un **swing procedural** (rota de `-SWING_ARC/2` a
+    `+SWING_ARC/2` a lo largo de `attack_duration`); es solo estético, el `CollisionShape2D` del
+    hitbox no rota. Patrón procedural con floats, sin `AnimationPlayer` ni `Timer`.
 - **Alcance:** `attack_offset` + medio ancho del hitbox debe superar el rango de muerte por contacto
   lateral (jugador cápsula r≈8 + medio cuerpo enemigo ≈14 ⇒ muerte a ~22 px). Hoy `attack_offset =
   28` y el hitbox mide `28 × 32`, dejando una ventana segura de golpeo real por delante del jugador.

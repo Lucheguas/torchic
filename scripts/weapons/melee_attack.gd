@@ -10,8 +10,13 @@ extends Area2D
 ## ground enemy without dying on touch.
 @export var attack_offset: float = 28.0
 
+## Arc, in radians, that the blade visual sweeps across the swing. Purely
+## cosmetic: the CollisionShape2D hitbox does not rotate.
+const SWING_ARC: float = 1.4
+
 var _attack_timer: float = 0.0
 var _already_hit: Dictionary = {}  ## Enemies hit during the current swing
+@onready var _blade: Node2D = $Blade
 
 
 func _ready() -> void:
@@ -37,9 +42,14 @@ func _physics_process(delta: float) -> void:
 	if _attack_timer <= 0.0:
 		return
 	_attack_timer -= delta
+	# Sweep the blade from -half arc to +half arc across the swing for a slash
+	# read. progress goes 0 -> 1 as the timer drains.
+	var progress := 1.0 - clampf(_attack_timer / attack_duration, 0.0, 1.0)
+	_blade.rotation = lerpf(-SWING_ARC * 0.5, SWING_ARC * 0.5, progress)
 	if _attack_timer <= 0.0:
 		monitoring = false
 		visible = false
+		_blade.rotation = 0.0
 
 
 func _on_body_entered(body: Node2D) -> void:

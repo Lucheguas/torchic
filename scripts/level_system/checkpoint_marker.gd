@@ -11,7 +11,9 @@ signal marker_activated()
 var is_active: bool = false
 
 # --- References ---
-@onready var flag_sprite: Sprite2D = $CheckpointFlag
+## Node2D que agrupa el poste y el banderín. El modulate tiñe a ambos hijos:
+## gris mientras el checkpoint está inactivo, verde al activarse.
+@onready var flag_sprite: Node2D = $CheckpointFlag
 @onready var animation_player: AnimationPlayer = $AnimationPlayer
 
 # --- Constants ---

@@ -4,13 +4,14 @@
 [ext_resource type="Script" uid="uid://cgc0nu630vkod" path="res://scripts/movement_controller.gd" id="2_script"]
 [ext_resource type="Script" uid="uid://ck8opx73l4ucm" path="res://scripts/weapons/melee_attack.gd" id="3_melee"]
 [ext_resource type="Resource" path="res://resources/weapons/daga_de_madera.tres" id="4_daga"]
+[ext_resource type="Texture2D" uid="uid://c47kklkrfemwu" path="res://resources/weapons/Sprite-000ESPADAROSA.png" id="5_qlg0r"]
 
 [sub_resource type="CapsuleShape2D" id="CapsuleShape2D_o5qli"]
 radius = 8.0
 height = 34.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_melee"]
-size = Vector2(28, 32)
+size = Vector2(15, 14)
 
 [node name="Player" type="CharacterBody2D" unique_id=516110515 groups=["player"]]
 script = ExtResource("2_script")
@@ -28,8 +29,10 @@ script = ExtResource("3_melee")
 weapon = ExtResource("4_daga")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="MeleeAttack" unique_id=1071387016]
+position = Vector2(-0.5, -1)
 shape = SubResource("RectangleShape2D_melee")
 
-[node name="Blade" type="Polygon2D" parent="MeleeAttack" unique_id=1918489953]
-color = Color(0.55, 0.4, 0.2, 1)
-polygon = PackedVector2Array(-7, -14, 7, -14, 6, 14, -6, 14)
+[node name="Blade" type="Sprite2D" parent="MeleeAttack" unique_id=665208430]
+position = Vector2(1.0000019, -1)
+scale = Vector2(0.9444444, 0.9375)
+texture = ExtResource("5_qlg0r")
