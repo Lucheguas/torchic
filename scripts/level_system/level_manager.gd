@@ -26,12 +26,20 @@ enum GameFlowState {
 	RESPAWNING,
 }
 
+const STARTING_LIVES: int = 3
+
 var current_state: GameFlowState = GameFlowState.LOADING
 var current_floor_id: int = 1
 var current_sublevel = null  # SubLevelConfig
 var player_ref: CharacterBody2D = null
 var _current_scene_root: Node = null
 var _sublevel_scene_root: Node = null
+var _lives: int = STARTING_LIVES
+var _game_over_screen: Node = null
+var _hud: Node = null
+
+# Emitted whenever the life count changes (respawn or new game), for an optional HUD.
+signal lives_changed(lives: int)
 
 # --- Child Node References ---
 @onready var checkpoint_system: Node = $CheckpointSystem
@@ -78,11 +86,36 @@ func _physics_process(_delta: float) -> void:
 # --- Public Methods ---
 
 func start_game(from_save: bool = false) -> void:
+	var fpd_script = load("res://scripts/level_system/data/floor_progress_data.gd")
 	if from_save:
-		var fpd_script = load("res://scripts/level_system/data/floor_progress_data.gd")
 		floor_progress = fpd_script.load_from_disk()
+	else:
+		# New game: always start from scratch, ignoring any prior progress so
+		# pressing "Inicio" in the menu begins a fresh run every time.
+		floor_progress = fpd_script.new()
+	_lives = STARTING_LIVES
+	_show_hud()
+	lives_changed.emit(_lives)
 	current_floor_id = floor_progress.current_floor
 	load_floor(current_floor_id)
+
+
+## Current remaining lives. Used by the HUD to render its initial value.
+func get_lives() -> int:
+	return _lives
+
+
+func _show_hud() -> void:
+	if _hud and is_instance_valid(_hud):
+		return
+	_hud = load("res://scenes/hud.tscn").instantiate()
+	get_tree().root.add_child(_hud)
+
+
+func _hide_hud() -> void:
+	if _hud and is_instance_valid(_hud):
+		_hud.queue_free()
+		_hud = null
 
 
 func load_floor(floor_id: int) -> void:
@@ -178,6 +211,15 @@ func handle_player_death() -> void:
 	# enemigo) lo teletransportaría a un checkpoint a media transición.
 	if not _is_playing():
 		return
+	_lives -= 1
+	lives_changed.emit(_lives)
+	if _lives > 0:
+		_respawn_at_checkpoint()
+	else:
+		_trigger_game_over()
+
+
+func _respawn_at_checkpoint() -> void:
 	current_state = GameFlowState.RESPAWNING
 	set_player_input_enabled(false)
 	var respawn_pos: Vector2 = checkpoint_system.get_respawn_position()
@@ -192,6 +234,30 @@ func handle_player_death() -> void:
 	else:
 		current_state = GameFlowState.PLAYING_MAIN_LEVEL
 	player_respawned.emit(respawn_pos)
+
+
+## No lives left: tear down the level and show the Game Over screen.
+func _trigger_game_over() -> void:
+	current_state = GameFlowState.LOADING
+	set_player_input_enabled(false)
+	_hide_hud()
+	if _current_scene_root and is_instance_valid(_current_scene_root):
+		scene_loader.unload_scene(_current_scene_root)
+		_current_scene_root = null
+	player_ref = null
+	var go_screen: Node = load("res://scenes/game_over.tscn").instantiate()
+	get_tree().root.add_child(go_screen)
+	_game_over_screen = go_screen
+
+
+## Called by the Game Over screen's button: clean up and return to the main menu.
+func return_to_menu() -> void:
+	if _game_over_screen and is_instance_valid(_game_over_screen):
+		_game_over_screen.queue_free()
+		_game_over_screen = null
+	_hide_hud()
+	current_state = GameFlowState.LOADING
+	get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
 
 
 ## True while the player has actual control of the character.
