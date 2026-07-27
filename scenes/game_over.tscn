@@ -1,6 +1,7 @@
-[gd_scene format=3 uid="uid://brxqhsg3vdoq7"]
+[gd_scene load_steps=3 format=3 uid="uid://ctorchicgameover01"]
 
 [ext_resource type="Script" path="res://scripts/game_over.gd" id="1_go"]
+[ext_resource type="Texture2D" path="res://assets/ui/game-over.png" id="2_goimg"]
 
 [node name="GameOver" type="CanvasLayer"]
 layer = 100
@@ -17,7 +18,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-color = Color(0.12, 0.05, 0.05, 1)
+color = Color(0.29, 0.13, 0.42, 1)
 
 [node name="CenterContainer" type="CenterContainer" parent="Root"]
 layout_mode = 1
@@ -29,10 +30,12 @@ anchor_bottom = 1.0
 layout_mode = 2
 theme_override_constants/separation = 24
 
-[node name="Title" type="Label" parent="Root/CenterContainer/VBoxContainer"]
+[node name="Title" type="TextureRect" parent="Root/CenterContainer/VBoxContainer"]
+custom_minimum_size = Vector2(340, 190)
 layout_mode = 2
-text = "GAME OVER"
-horizontal_alignment = 1
+texture = ExtResource("2_goimg")
+expand_mode = 1
+stretch_mode = 5
 
 [node name="MenuButton" type="Button" parent="Root/CenterContainer/VBoxContainer"]
 layout_mode = 2
