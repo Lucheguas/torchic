@@ -17,6 +17,10 @@ offset_top = -28.0
 offset_right = 14.0
 color = Color(0.8, 0.2, 0.2, 1)
 
+[node name="Anim" type="Sprite2D" parent="."]
+visible = false
+position = Vector2(0, -14)
+
 [node name="CollisionShape2D" type="CollisionShape2D" parent="." unique_id=249946820]
 position = Vector2(0, -14)
 shape = SubResource("RectangleShape2D_body")

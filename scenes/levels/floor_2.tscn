@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://bs6hcqyn2v4bb" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/level_system/checkpoint_marker.tscn" id="2_checkpoint"]
 [ext_resource type="PackedScene" path="res://scenes/level_system/transition_trigger.tscn" id="3_trigger"]
-[ext_resource type="PackedScene" path="res://scenes/enemy_basic.tscn" id="5_enemy"]
+[ext_resource type="PackedScene" uid="uid://c1hm103r8une2" path="res://scenes/enemy_basic.tscn" id="5_enemy"]
 [ext_resource type="Script" uid="uid://dwsfaer1xsulb" path="res://scripts/kill_zone.gd" id="6_killzone"]
 [ext_resource type="Texture2D" uid="uid://bmygcvh81vifx" path="res://level-2-asset-1.png" id="7_surf"]
 [ext_resource type="Texture2D" uid="uid://cloj72ocxxane" path="res://level-2-asset-2.png" id="8_fill"]
@@ -73,6 +73,7 @@ motion_scale = Vector2(0.2, 0.2)
 motion_mirroring = Vector2(1280, 0)
 
 [node name="Sprite2D" type="Sprite2D" parent="Background/ParallaxLayer" unique_id=357103114]
+position = Vector2(55, -255)
 scale = Vector2(0.5, 0.5)
 texture = ExtResource("1_0806p")
 centered = false
