@@ -1,56 +1,85 @@
-[gd_scene format=3 uid="uid://sbsetp40sypk"]
+[gd_scene format=4 uid="uid://sbsetp40sypk"]
 
 [ext_resource type="Texture2D" uid="uid://ybemge7pr02" path="res://resources/Fondos/Fondo WINDOWS.png" id="1_0806p"]
 [ext_resource type="PackedScene" uid="uid://bs6hcqyn2v4bb" path="res://scenes/player.tscn" id="1_player"]
 [ext_resource type="PackedScene" path="res://scenes/level_system/checkpoint_marker.tscn" id="2_checkpoint"]
 [ext_resource type="PackedScene" path="res://scenes/level_system/transition_trigger.tscn" id="3_trigger"]
-[ext_resource type="PackedScene" path="res://scenes/enemy_basic.tscn" id="5_enemy"]
+[ext_resource type="PackedScene" uid="uid://c1hm103r8une2" path="res://scenes/enemy_basic.tscn" id="5_enemy"]
 [ext_resource type="Script" uid="uid://dwsfaer1xsulb" path="res://scripts/kill_zone.gd" id="6_killzone"]
 [ext_resource type="Texture2D" uid="uid://bmygcvh81vifx" path="res://level-2-asset-1.png" id="7_surf"]
 [ext_resource type="Texture2D" uid="uid://cloj72ocxxane" path="res://level-2-asset-2.png" id="8_fill"]
 [ext_resource type="Texture2D" uid="uid://8amb5n5d57rk" path="res://level-2-asset-3.png" id="9_edge"]
+[ext_resource type="Texture2D" uid="uid://c4gwufr3vek1f" path="res://Walls and Tiles.png" id="10_walls"]
 
-[sub_resource type="RectangleShape2D" id="g_500"]
-size = Vector2(500, 32)
+[sub_resource type="RectangleShape2D" id="g1_start_shape"]
+size = Vector2(495, 46)
 
-[sub_resource type="RectangleShape2D" id="g_250"]
-size = Vector2(250, 32)
+[sub_resource type="RectangleShape2D" id="g2_mid_shape"]
+size = Vector2(257, 48)
 
-[sub_resource type="RectangleShape2D" id="plat"]
-size = Vector2(120, 24)
+[sub_resource type="RectangleShape2D" id="g3_shape"]
+size = Vector2(258, 47)
 
-[sub_resource type="RectangleShape2D" id="pillar_cp"]
-size = Vector2(110, 32)
+[sub_resource type="RectangleShape2D" id="pa_shape"]
+size = Vector2(127, 33)
 
-[sub_resource type="RectangleShape2D" id="valley_floor"]
-size = Vector2(1200, 32)
+[sub_resource type="RectangleShape2D" id="pb_shape"]
+size = Vector2(128, 32)
 
-[sub_resource type="RectangleShape2D" id="wall_tall"]
+[sub_resource type="RectangleShape2D" id="gp1_shape"]
+size = Vector2(112, 16)
+
+[sub_resource type="RectangleShape2D" id="gp2_shape"]
+size = Vector2(128, 16)
+
+[sub_resource type="RectangleShape2D" id="cp_pillar_shape"]
+size = Vector2(113, 32)
+
+[sub_resource type="RectangleShape2D" id="gp3_shape"]
+size = Vector2(112, 32)
+
+[sub_resource type="RectangleShape2D" id="gp4_shape"]
+size = Vector2(127, 32)
+
+[sub_resource type="RectangleShape2D" id="valley_floor_shape"]
+size = Vector2(1201, 48)
+
+[sub_resource type="RectangleShape2D" id="wall_left_shape"]
+size = Vector2(64, 89)
+
+[sub_resource type="RectangleShape2D" id="wall_right_shape"]
 size = Vector2(64, 80)
 
-[sub_resource type="RectangleShape2D" id="step_block"]
-size = Vector2(100, 40)
+[sub_resource type="RectangleShape2D" id="step1_shape"]
+size = Vector2(96, 36)
 
-[sub_resource type="RectangleShape2D" id="g_meta"]
-size = Vector2(320, 32)
+[sub_resource type="RectangleShape2D" id="step2_shape"]
+size = Vector2(112, 36)
 
-[sub_resource type="RectangleShape2D" id="pit_med"]
-size = Vector2(260, 32)
+[sub_resource type="RectangleShape2D" id="s1_shape"]
+size = Vector2(112, 30)
 
-[sub_resource type="RectangleShape2D" id="pit_big"]
-size = Vector2(1000, 32)
+[sub_resource type="RectangleShape2D" id="s2_shape"]
+size = Vector2(128, 31)
 
-[sub_resource type="RectangleShape2D" id="pit_stair"]
-size = Vector2(900, 32)
+[sub_resource type="RectangleShape2D" id="s3_shape"]
+size = Vector2(112, 32)
+
+[sub_resource type="RectangleShape2D" id="s4_shape"]
+size = Vector2(127, 32)
+
+[sub_resource type="RectangleShape2D" id="s5_shape"]
+size = Vector2(128, 31)
+
+[sub_resource type="RectangleShape2D" id="g_meta_shape"]
+size = Vector2(319, 31)
 
 [sub_resource type="TileSetAtlasSource" id="atlas_surf"]
 texture = ExtResource("7_surf")
-texture_region_size = Vector2i(16, 16)
 0:0/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="atlas_fill"]
 texture = ExtResource("8_fill")
-texture_region_size = Vector2i(16, 16)
 0:0/0 = 0
 
 [sub_resource type="TileSetAtlasSource" id="atlas_edge"]
@@ -58,11 +87,123 @@ texture = ExtResource("9_edge")
 texture_region_size = Vector2i(16, 15)
 0:0/0 = 0
 
+[sub_resource type="TileSetAtlasSource" id="atlas_walls"]
+texture = ExtResource("10_walls")
+0:0/0 = 0
+1:0/0 = 0
+2:0/0 = 0
+3:0/0 = 0
+4:0/0 = 0
+5:0/0 = 0
+6:0/0 = 0
+7:0/0 = 0
+8:0/0 = 0
+9:0/0 = 0
+0:1/0 = 0
+1:1/0 = 0
+2:1/0 = 0
+3:1/0 = 0
+4:1/0 = 0
+5:1/0 = 0
+6:1/0 = 0
+7:1/0 = 0
+8:1/0 = 0
+9:1/0 = 0
+0:2/0 = 0
+1:2/0 = 0
+2:2/0 = 0
+3:2/0 = 0
+4:2/0 = 0
+5:2/0 = 0
+6:2/0 = 0
+7:2/0 = 0
+8:2/0 = 0
+9:2/0 = 0
+0:3/0 = 0
+1:3/0 = 0
+2:3/0 = 0
+3:3/0 = 0
+4:3/0 = 0
+5:3/0 = 0
+6:3/0 = 0
+7:3/0 = 0
+8:3/0 = 0
+9:3/0 = 0
+0:4/0 = 0
+1:4/0 = 0
+2:4/0 = 0
+3:4/0 = 0
+4:4/0 = 0
+5:4/0 = 0
+6:4/0 = 0
+7:4/0 = 0
+8:4/0 = 0
+9:4/0 = 0
+0:5/0 = 0
+1:5/0 = 0
+2:5/0 = 0
+3:5/0 = 0
+4:5/0 = 0
+5:5/0 = 0
+6:5/0 = 0
+7:5/0 = 0
+8:5/0 = 0
+9:5/0 = 0
+0:6/0 = 0
+1:6/0 = 0
+2:6/0 = 0
+3:6/0 = 0
+4:6/0 = 0
+5:6/0 = 0
+6:6/0 = 0
+7:6/0 = 0
+8:6/0 = 0
+9:6/0 = 0
+0:7/0 = 0
+1:7/0 = 0
+2:7/0 = 0
+3:7/0 = 0
+4:7/0 = 0
+5:7/0 = 0
+6:7/0 = 0
+7:7/0 = 0
+8:7/0 = 0
+9:7/0 = 0
+0:8/0 = 0
+1:8/0 = 0
+2:8/0 = 0
+3:8/0 = 0
+4:8/0 = 0
+5:8/0 = 0
+6:8/0 = 0
+7:8/0 = 0
+8:8/0 = 0
+9:8/0 = 0
+0:9/0 = 0
+1:9/0 = 0
+2:9/0 = 0
+3:9/0 = 0
+4:9/0 = 0
+5:9/0 = 0
+6:9/0 = 0
+7:9/0 = 0
+8:9/0 = 0
+9:9/0 = 0
+
 [sub_resource type="TileSet" id="TileSet_lvl2"]
-tile_size = Vector2i(16, 16)
 sources/0 = SubResource("atlas_surf")
 sources/1 = SubResource("atlas_fill")
 sources/2 = SubResource("atlas_edge")
+sources/3 = SubResource("atlas_walls")
+
+[sub_resource type="RectangleShape2D" id="pit_med"]
+size = Vector2(270, 32)
+
+[sub_resource type="RectangleShape2D" id="pit_big"]
+size = Vector2(1000, 32)
+
+[sub_resource type="RectangleShape2D" id="pit_stair"]
+size = Vector2(900, 32)
 
 [node name="Floor2" type="Node2D" unique_id=996745415]
 
@@ -83,154 +224,167 @@ centered = false
 position = Vector2(250, 600)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/G1_Start" unique_id=873051375]
-shape = SubResource("g_500")
+position = Vector2(-2.5, 0)
+shape = SubResource("g1_start_shape")
 
-[node name="Visual" type="ColorRect" parent="Environment/G1_Start"]
+[node name="Visual" type="ColorRect" parent="Environment/G1_Start" unique_id=1371628647]
 offset_left = -250.0
-offset_top = -16.0
-offset_right = 250.0
-offset_bottom = 16.0
+offset_top = -23.0
+offset_right = 245.0
+offset_bottom = 23.0
 color = Color(0.3, 0.6, 0.2, 1)
 
 [node name="G2_Mid" type="StaticBody2D" parent="Environment" unique_id=107825606]
 position = Vector2(900, 600)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/G2_Mid" unique_id=203218788]
-shape = SubResource("g_250")
+position = Vector2(-3.5, 0)
+shape = SubResource("g2_mid_shape")
 
-[node name="Visual" type="ColorRect" parent="Environment/G2_Mid"]
-offset_left = -125.0
-offset_top = -16.0
+[node name="Visual" type="ColorRect" parent="Environment/G2_Mid" unique_id=1774445387]
+offset_left = -132.0
+offset_top = -24.0
 offset_right = 125.0
-offset_bottom = 16.0
+offset_bottom = 24.0
 color = Color(0.3, 0.6, 0.2, 1)
 
 [node name="G3" type="StaticBody2D" parent="Environment" unique_id=630129270]
 position = Vector2(1400, 600)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/G3" unique_id=1999197777]
-shape = SubResource("g_250")
+position = Vector2(0, -0.5)
+shape = SubResource("g3_shape")
 
-[node name="Visual" type="ColorRect" parent="Environment/G3"]
-offset_left = -125.0
-offset_top = -16.0
-offset_right = 125.0
-offset_bottom = 16.0
+[node name="Visual" type="ColorRect" parent="Environment/G3" unique_id=980433492]
+offset_left = -129.0
+offset_top = -24.0
+offset_right = 129.0
+offset_bottom = 23.0
 color = Color(0.3, 0.6, 0.2, 1)
 
 [node name="PA" type="StaticBody2D" parent="Environment" unique_id=48510989]
 position = Vector2(630, 512)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/PA" unique_id=1666690497]
-shape = SubResource("plat")
+position = Vector2(-6.5, 0.5)
+shape = SubResource("pa_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/PA" unique_id=1489982812]
-offset_left = -60.0
-offset_top = -12.0
-offset_right = 60.0
-offset_bottom = 12.0
+visible = false
+offset_left = -70.0
+offset_top = -16.0
+offset_right = 57.0
+offset_bottom = 17.0
 color = Color(0.6, 0.7, 0.85, 1)
 
 [node name="PB" type="StaticBody2D" parent="Environment" unique_id=56322421]
 position = Vector2(1150, 502)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/PB" unique_id=397979939]
-shape = SubResource("plat")
+position = Vector2(3, -6)
+shape = SubResource("pb_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/PB" unique_id=268652719]
-offset_left = -60.0
-offset_top = -12.0
-offset_right = 60.0
-offset_bottom = 12.0
+offset_left = -61.0
+offset_top = -22.0
+offset_right = 67.0
+offset_bottom = 10.0
 color = Color(0.6, 0.7, 0.85, 1)
 
 [node name="GP1" type="StaticBody2D" parent="Environment" unique_id=692376623]
 position = Vector2(1690, 522)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/GP1" unique_id=955997585]
-shape = SubResource("plat")
+position = Vector2(-2, -2)
+shape = SubResource("gp1_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/GP1" unique_id=1905148621]
-offset_left = -60.0
-offset_top = -12.0
-offset_right = 60.0
-offset_bottom = 12.0
+offset_left = -58.0
+offset_top = -10.0
+offset_right = 54.0
+offset_bottom = 6.0
 color = Color(0.6, 0.7, 0.85, 1)
 
 [node name="GP2" type="StaticBody2D" parent="Environment" unique_id=1940170986]
 position = Vector2(1860, 472)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/GP2" unique_id=798651624]
-shape = SubResource("plat")
+position = Vector2(-4, 0)
+shape = SubResource("gp2_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/GP2" unique_id=1990801164]
-offset_left = -60.0
-offset_top = -12.0
+offset_left = -68.0
+offset_top = -8.0
 offset_right = 60.0
-offset_bottom = 12.0
+offset_bottom = 8.0
 color = Color(0.6, 0.7, 0.85, 1)
 
 [node name="CP_Pillar" type="StaticBody2D" parent="Environment" unique_id=1514296074]
 position = Vector2(2040, 556)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/CP_Pillar" unique_id=770830665]
-shape = SubResource("pillar_cp")
+position = Vector2(0.5, 4)
+shape = SubResource("cp_pillar_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/CP_Pillar" unique_id=1635095266]
-offset_left = -55.0
-offset_top = -16.0
-offset_right = 55.0
-offset_bottom = 16.0
+offset_left = -56.0
+offset_top = -12.0
+offset_right = 57.0
+offset_bottom = 20.0
 color = Color(0.5, 0.6, 0.75, 1)
 
 [node name="GP3" type="StaticBody2D" parent="Environment" unique_id=1525987644]
 position = Vector2(2200, 502)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/GP3" unique_id=686087159]
-shape = SubResource("plat")
+position = Vector2(0, 10)
+shape = SubResource("gp3_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/GP3" unique_id=1743345217]
-offset_left = -60.0
-offset_top = -12.0
-offset_right = 60.0
-offset_bottom = 12.0
+offset_left = -56.0
+offset_top = -6.0
+offset_right = 56.0
+offset_bottom = 26.0
 color = Color(0.6, 0.7, 0.85, 1)
 
 [node name="GP4" type="StaticBody2D" parent="Environment" unique_id=1187103909]
 position = Vector2(2380, 532)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/GP4" unique_id=1049524768]
-shape = SubResource("plat")
+position = Vector2(3.5, 12)
+shape = SubResource("gp4_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/GP4" unique_id=1797164651]
 offset_left = -60.0
-offset_top = -12.0
-offset_right = 60.0
-offset_bottom = 12.0
+offset_top = -4.0
+offset_right = 67.0
+offset_bottom = 28.0
 color = Color(0.6, 0.7, 0.85, 1)
 
 [node name="Valley_Floor" type="StaticBody2D" parent="Environment" unique_id=901469334]
 position = Vector2(3100, 600)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Valley_Floor" unique_id=635124392]
-shape = SubResource("valley_floor")
+position = Vector2(-3.5, 0)
+shape = SubResource("valley_floor_shape")
 
-[node name="Visual" type="ColorRect" parent="Environment/Valley_Floor"]
-offset_left = -600.0
-offset_top = -16.0
-offset_right = 600.0
-offset_bottom = 16.0
+[node name="Visual" type="ColorRect" parent="Environment/Valley_Floor" unique_id=464825354]
+offset_left = -604.0
+offset_top = -24.0
+offset_right = 597.0
+offset_bottom = 24.0
 color = Color(0.3, 0.6, 0.2, 1)
 
 [node name="Wall_Left" type="StaticBody2D" parent="Environment" unique_id=1803620924]
 position = Vector2(2560, 544)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Wall_Left" unique_id=2067482808]
-shape = SubResource("wall_tall")
+position = Vector2(0, -4.5)
+shape = SubResource("wall_left_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/Wall_Left" unique_id=452395460]
 offset_left = -32.0
-offset_top = -40.0
+offset_top = -49.0
 offset_right = 32.0
 offset_bottom = 40.0
 color = Color(0.4, 0.5, 0.7, 1)
@@ -239,25 +393,27 @@ color = Color(0.4, 0.5, 0.7, 1)
 position = Vector2(3640, 544)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Wall_Right" unique_id=1092169073]
-shape = SubResource("wall_tall")
+position = Vector2(8, -8)
+shape = SubResource("wall_right_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/Wall_Right" unique_id=778902953]
-offset_left = -32.0
-offset_top = -40.0
-offset_right = 32.0
-offset_bottom = 40.0
+offset_left = -24.0
+offset_top = -48.0
+offset_right = 40.0
+offset_bottom = 32.0
 color = Color(0.4, 0.5, 0.7, 1)
 
 [node name="Step1" type="StaticBody2D" parent="Environment" unique_id=1544295400]
 position = Vector2(2800, 560)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Step1" unique_id=135974570]
-shape = SubResource("step_block")
+position = Vector2(0, 2)
+shape = SubResource("step1_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/Step1" unique_id=1314485204]
-offset_left = -50.0
-offset_top = -20.0
-offset_right = 50.0
+offset_left = -48.0
+offset_top = -16.0
+offset_right = 48.0
 offset_bottom = 20.0
 color = Color(0.45, 0.55, 0.72, 1)
 
@@ -265,12 +421,13 @@ color = Color(0.45, 0.55, 0.72, 1)
 position = Vector2(3400, 560)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Step2" unique_id=242349622]
-shape = SubResource("step_block")
+position = Vector2(0, 2)
+shape = SubResource("step2_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/Step2" unique_id=752519912]
-offset_left = -50.0
-offset_top = -20.0
-offset_right = 50.0
+offset_left = -56.0
+offset_top = -16.0
+offset_right = 56.0
 offset_bottom = 20.0
 color = Color(0.45, 0.55, 0.72, 1)
 
@@ -278,88 +435,95 @@ color = Color(0.45, 0.55, 0.72, 1)
 position = Vector2(3820, 552)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/S1" unique_id=2115737313]
-shape = SubResource("plat")
+position = Vector2(-4, -8)
+shape = SubResource("s1_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/S1" unique_id=575507091]
 offset_left = -60.0
-offset_top = -12.0
-offset_right = 60.0
-offset_bottom = 12.0
+offset_top = -23.0
+offset_right = 52.0
+offset_bottom = 7.0
 color = Color(0.6, 0.7, 0.85, 1)
 
 [node name="S2" type="StaticBody2D" parent="Environment" unique_id=414149613]
 position = Vector2(3990, 492)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/S2" unique_id=656332844]
-shape = SubResource("plat")
+position = Vector2(-6, 3.5)
+shape = SubResource("s2_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/S2" unique_id=131327786]
-offset_left = -60.0
+offset_left = -70.0
 offset_top = -12.0
-offset_right = 60.0
-offset_bottom = 12.0
+offset_right = 58.0
+offset_bottom = 19.0
 color = Color(0.6, 0.7, 0.85, 1)
 
 [node name="S3" type="StaticBody2D" parent="Environment" unique_id=1295388320]
 position = Vector2(4160, 432)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/S3" unique_id=497666519]
-shape = SubResource("plat")
+position = Vector2(8, 0)
+shape = SubResource("s3_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/S3" unique_id=47190748]
-offset_left = -60.0
-offset_top = -12.0
-offset_right = 60.0
-offset_bottom = 12.0
+offset_left = -48.0
+offset_top = -16.0
+offset_right = 64.0
+offset_bottom = 16.0
 color = Color(0.6, 0.7, 0.85, 1)
 
 [node name="S4" type="StaticBody2D" parent="Environment" unique_id=1578372733]
 position = Vector2(4330, 382)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/S4" unique_id=1273231832]
-shape = SubResource("plat")
+position = Vector2(5.5, 2)
+shape = SubResource("s4_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/S4" unique_id=714365724]
-offset_left = -60.0
-offset_top = -12.0
-offset_right = 60.0
-offset_bottom = 12.0
+offset_left = -58.0
+offset_top = -14.0
+offset_right = 69.0
+offset_bottom = 18.0
 color = Color(0.6, 0.7, 0.85, 1)
 
 [node name="S5" type="StaticBody2D" parent="Environment" unique_id=809256903]
 position = Vector2(4500, 342)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/S5" unique_id=2028551762]
-shape = SubResource("plat")
+position = Vector2(-4, -6.5)
+shape = SubResource("s5_shape")
 
 [node name="Visual" type="ColorRect" parent="Environment/S5" unique_id=1836324314]
-offset_left = -60.0
-offset_top = -12.0
+offset_left = -68.0
+offset_top = -22.0
 offset_right = 60.0
-offset_bottom = 12.0
+offset_bottom = 9.0
 color = Color(0.6, 0.7, 0.85, 1)
 
 [node name="G_Meta" type="StaticBody2D" parent="Environment" unique_id=1260420777]
 position = Vector2(4700, 372)
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/G_Meta" unique_id=804510135]
-shape = SubResource("g_meta")
+position = Vector2(4.5, -3.5)
+shape = SubResource("g_meta_shape")
 
-[node name="Visual" type="ColorRect" parent="Environment/G_Meta"]
-offset_left = -160.0
-offset_top = -16.0
-offset_right = 160.0
-offset_bottom = 16.0
+[node name="Visual" type="ColorRect" parent="Environment/G_Meta" unique_id=373565072]
+offset_left = -155.0
+offset_top = -19.0
+offset_right = 164.0
+offset_bottom = 12.0
 color = Color(0.3, 0.6, 0.2, 1)
 
 [node name="MetaFlag" type="ColorRect" parent="Environment" unique_id=490451501]
-offset_left = 4772.0
-offset_top = 236.0
-offset_right = 4788.0
-offset_bottom = 356.0
+offset_left = 4768.0
+offset_top = 233.0
+offset_right = 4784.0
+offset_bottom = 353.0
 color = Color(0.9, 0.8, 0.2, 1)
 
-[node name="Terrain" type="TileMapLayer" parent="."]
+[node name="Terrain" type="TileMapLayer" parent="." unique_id=1896692088]
+tile_map_data = PackedByteArray("AAAMACUAAwAJAAAAAAAMACYAAwAIAAEAAAANACYAAwABAAYAAAAAACQAAwABAAYAAAABACQAAwABAAYAAAACACQAAwABAAYAAAADACQAAwABAAYAAAAEACQAAwABAAYAAAAFACQAAwAHAAgAAAAGACQAAwABAAYAAAAHACQAAwABAAYAAAAIACQAAwABAAYAAAAJACQAAwAEAAYAAAAKACQAAwABAAYAAAALACQAAwABAAYAAAAMACQAAwABAAYAAAANACQAAwABAAYAAAAOACQAAwAEAAYAAAAPACQAAwABAAYAAAAQACQAAwABAAYAAAARACQAAwABAAYAAAASACQAAwABAAYAAAATACQAAwABAAYAAAAUACQAAwABAAYAAAAVACQAAwABAAYAAAAWACQAAwABAAYAAAAXACQAAwABAAYAAAAYACQAAwAHAAgAAAAZACQAAwABAAYAAAAaACQAAwABAAYAAAAbACQAAwABAAYAAAAcACQAAwABAAYAAAAdACQAAwABAAYAAAAeACQAAwADAAQAAAAAACUAAwABAAYAAAABACUAAwABAAYAAAACACUAAwABAAYAAAADACUAAwAHAAgAAAAEACUAAwABAAYAAAAFACUAAwABAAYAAAALACUAAwABAAYAAAAKACUAAwABAAYAAAAJACUAAwAEAAYAAAAIACUAAwAEAAcAAAAHACUAAwABAAYAAAAGACUAAwAEAAYAAAANACUAAwABAAYAAAAOACUAAwABAAYAAAAPACUAAwABAAIAAAAQACUAAwAHAAAAAAAQACYAAwABAAIAAAARACYAAwABAAYAAAAMACcAAwAIAAEAAAAMACgAAwAIAAEAAAAMACkAAwAIAAEAAAAAACYAAwABAAYAAAABACYAAwABAAYAAAACACYAAwABAAYAAAADACYAAwABAAYAAAAEACYAAwABAAYAAAAFACYAAwABAAYAAAAGACYAAwAEAAcAAAAHACYAAwABAAYAAAAIACYAAwABAAYAAAAJACYAAwABAAYAAAAKACYAAwABAAYAAAALACYAAwABAAYAAAAOACYAAwABAAYAAAAPACYAAwABAAYAAAARACUAAwABAAYAAAASACUAAwABAAYAAAATACUAAwABAAYAAAAUACUAAwABAAYAAAAVACUAAwABAAYAAAAWACUAAwABAAYAAAAXACUAAwAJAAAAAAAYACUAAwABAAYAAAAZACUAAwABAAYAAAAaACUAAwABAAYAAAAbACUAAwAHAAgAAAAcACUAAwABAAYAAAAdACUAAwABAAYAAAAeACUAAwABAAYAAAAeACYAAwABAAYAAAAdACYAAwABAAYAAAAcACYAAwABAAYAAAAbACYAAwABAAYAAAAaACYAAwABAAYAAAAZACYAAwABAAYAAAAYACYAAwABAAYAAAAWACYAAwABAAYAAAAVACYAAwABAAYAAAAUACYAAwABAAYAAAATACYAAwABAAYAAAASACYAAwABAAYAAAAXACYAAwAJAAEAAAAXACcAAwAJAAEAAAAXACgAAwAJAAEAAAAXACkAAwAJAAEAAAAAACcAAwABAAYAAAABACcAAwABAAYAAAACACcAAwABAAYAAAADACcAAwABAAYAAAAEACcAAwABAAYAAAAFACcAAwABAAYAAAAGACcAAwABAAYAAAAHACgAAwABAAYAAAAIACgAAwABAAYAAAAJACgAAwABAAYAAAAKACgAAwABAAYAAAALACgAAwABAAYAAAALACcAAwABAAYAAAAKACcAAwABAAYAAAAJACcAAwABAAYAAAAIACcAAwABAAYAAAAHACcAAwABAAYAAAAAACgAAwABAAYAAAABACgAAwABAAYAAAACACgAAwABAAYAAAADACgAAwABAAYAAAAEACgAAwABAAYAAAAFACgAAwABAAYAAAAGACgAAwABAAYAAAAAACkAAwABAAYAAAABACkAAwABAAYAAAACACkAAwABAAYAAAADACkAAwABAAYAAAAEACkAAwABAAYAAAAFACkAAwABAAYAAAAGACkAAwABAAYAAAAHACkAAwABAAYAAAAIACkAAwABAAYAAAAJACkAAwABAAYAAAAKACkAAwABAAYAAAALACkAAwABAAYAAAANACcAAwABAAYAAAAOACcAAwABAAYAAAAPACcAAwABAAYAAAAQACcAAwABAAYAAAARACcAAwABAAYAAAANACgAAwABAAYAAAAOACgAAwABAAYAAAAPACgAAwABAAYAAAAQACgAAwABAAYAAAARACgAAwABAAYAAAASACcAAwABAAYAAAATACcAAwABAAYAAAAUACcAAwABAAYAAAAVACcAAwABAAYAAAAWACcAAwABAAYAAAASACgAAwABAAYAAAATACgAAwABAAYAAAAUACgAAwABAAYAAAAVACgAAwABAAYAAAAWACgAAwABAAYAAAANACkAAwABAAYAAAAOACkAAwABAAYAAAAPACkAAwABAAYAAAAQACkAAwABAAYAAAARACkAAwABAAYAAAASACkAAwABAAYAAAATACkAAwABAAYAAAAUACkAAwABAAYAAAAVACkAAwABAAYAAAAjAB8AAwABAAYAAAAkAB8AAwABAAYAAAAlAB8AAwABAAYAAAAmAB8AAwABAAYAAAAnAB8AAwABAAYAAAAoAB8AAwABAAYAAAApAB8AAwABAAYAAAAqAB8AAwABAAYAAAAjACAAAwABAAYAAAAkACAAAwABAAYAAAAlACAAAwABAAYAAAAmACAAAwABAAYAAAAnACAAAwABAAYAAAAoACAAAwABAAYAAAApACAAAwABAAYAAAAqACAAAwABAAYAAAAwACQAAwABAAYAAAAxACQAAwABAAYAAAAyACQAAwABAAYAAAAzACQAAwABAAYAAAA0ACQAAwABAAYAAAA1ACQAAwAEAAcAAAA2ACQAAwAFAAkAAAA3ACQAAwAGAAkAAAA4ACQAAwABAAYAAAA5ACQAAwABAAYAAAA6ACQAAwABAAYAAAA7ACQAAwABAAYAAAA8ACQAAwABAAYAAAA9ACQAAwABAAYAAAA+ACQAAwABAAYAAAA/ACQAAwABAAYAAAA/ACUAAwABAAYAAAA+ACUAAwABAAYAAAA9ACUAAwABAAYAAAA8ACUAAwAIAAkAAAA7ACUAAwAHAAkAAAA6ACUAAwAEAAcAAAA5ACUAAwABAAYAAAA4ACUAAwABAAYAAAA3ACUAAwABAAYAAAA2ACUAAwAGAAkAAAA1ACUAAwAFAAkAAAA0ACUAAwABAAYAAAAzACUAAwABAAYAAAAyACUAAwAGAAkAAAAwACUAAwABAAYAAAAxACUAAwAFAAkAAAAwACYAAwABAAYAAAAxACYAAwABAAYAAAAyACYAAwABAAYAAAAzACYAAwABAAYAAAA0ACYAAwABAAYAAAA1ACYAAwABAAYAAAA2ACYAAwABAAYAAAA3ACYAAwABAAYAAAA4ACYAAwABAAYAAAA5ACYAAwABAAYAAAA6ACYAAwABAAYAAAA7ACYAAwAEAAcAAAA8ACYAAwAJAAkAAAA9ACYAAwABAAYAAAA+ACYAAwABAAYAAAA/ACYAAwABAAYAAABEAB4AAwAIAAgAAABFAB8AAwAHAAgAAABFAB4AAwAEAAYAAABEAB8AAwAEAAcAAABGAB4AAwABAAYAAABHAB4AAwABAAYAAABIAB4AAwABAAYAAABJAB4AAwABAAYAAABKAB4AAwABAAYAAABLAB4AAwABAAYAAABGAB8AAwABAAYAAABHAB8AAwABAAYAAABIAB8AAwABAAYAAABJAB8AAwABAAYAAABKAB8AAwABAAYAAABLAB8AAwABAAYAAABPACQAAwABAAYAAABQACQAAwABAAYAAABRACQAAwABAAYAAABSACQAAwABAAYAAABTACQAAwABAAYAAABUACQAAwABAAYAAABVACQAAwABAAYAAABWACQAAwABAAYAAABXACQAAwABAAYAAABYACQAAwABAAYAAABZACQAAwABAAYAAABaACQAAwABAAYAAABbACQAAwABAAYAAABcACQAAwABAAYAAABdACQAAwABAAYAAABeACQAAwABAAYAAABfACQAAwAFAAAAAABPACUAAwABAAYAAABQACUAAwABAAYAAABRACUAAwABAAYAAABSACUAAwABAAYAAABTACUAAwABAAYAAABUACUAAwAFAAkAAABVACUAAwAGAAkAAABWACUAAwABAAYAAABXACUAAwABAAYAAABYACUAAwABAAYAAABZACUAAwAFAAkAAABaACUAAwAGAAkAAABbACUAAwABAAYAAABcACUAAwABAAYAAABdACUAAwABAAYAAABeACUAAwABAAYAAABfACUAAwABAAYAAABPACYAAwAHAAMAAABQACYAAwABAAYAAABRACYAAwABAAYAAABSACYAAwABAAYAAABTACYAAwABAAYAAABZACYAAwABAAYAAABaACYAAwABAAYAAABbACYAAwABAAYAAABcACYAAwABAAYAAABYACYAAwABAAYAAABXACYAAwABAAYAAABWACYAAwABAAYAAABVACYAAwABAAYAAABUACYAAwABAAYAAABdACYAAwABAAYAAABeACYAAwABAAYAAABfACYAAwAHAAMAAABmACAAAwABAAYAAABnACAAAwABAAYAAABoACAAAwABAAYAAABpACAAAwABAAYAAABqACAAAwABAAYAAABrACAAAwABAAYAAABsACAAAwABAAYAAABwAB0AAwABAAYAAABxAB0AAwABAAYAAAByAB0AAwABAAYAAABzAB0AAwABAAYAAAB0AB0AAwABAAYAAAB1AB0AAwABAAYAAAB2AB0AAwABAAYAAAB3AB0AAwABAAYAAAB8ACIAAwABAAYAAAB9ACIAAwABAAYAAAB+ACIAAwABAAYAAAB/ACIAAwABAAYAAACAACIAAwABAAYAAACBACIAAwABAAYAAACCACIAAwABAAYAAAB8ACMAAwABAAYAAAB9ACMAAwABAAYAAAB+ACMAAwABAAYAAAB/ACMAAwABAAYAAACAACMAAwABAAYAAACBACMAAwABAAYAAACCACMAAwABAAYAAACGAB8AAwABAAYAAACHAB8AAwABAAYAAACIAB8AAwABAAYAAACJAB8AAwABAAYAAACKAB8AAwABAAYAAACLAB8AAwABAAYAAACMAB8AAwABAAYAAACGACAAAwABAAYAAACHACAAAwABAAYAAACIACAAAwABAAYAAACJACAAAwABAAYAAACKACAAAwABAAYAAACLACAAAwABAAYAAACMACAAAwABAAYAAACRACEAAwABAAYAAACSACEAAwABAAYAAACTACEAAwABAAYAAACUACEAAwABAAYAAACVACEAAwABAAYAAACWACEAAwABAAYAAACXACEAAwABAAYAAACYACEAAwABAAYAAACRACIAAwABAAYAAACSACIAAwABAAYAAACTACIAAwABAAYAAACUACIAAwABAAYAAACVACIAAwABAAYAAACWACIAAwABAAYAAACXACIAAwABAAYAAACYACIAAwABAAYAAACcACUAAwABAAYAAACdACUAAwABAAYAAACeACUAAwABAAYAAACfACUAAwAJAAEAAACgACUAAwAJAAEAAAChACUAAwABAAYAAACiACUAAwABAAYAAACjACUAAwABAAYAAACkACUAAwABAAYAAAClACUAAwABAAYAAACmACUAAwABAAYAAACnACUAAwABAAYAAACoACUAAwABAAYAAACpACUAAwABAAYAAACqACUAAwABAAYAAACrACUAAwABAAYAAACcACYAAwABAAYAAACdACYAAwABAAYAAACeACYAAwABAAYAAACfACYAAwAJAAEAAACgACYAAwAJAAEAAAChACYAAwABAAYAAACiACYAAwABAAYAAACjACYAAwABAAYAAACkACYAAwABAAYAAAClACYAAwABAAYAAACmACYAAwABAAYAAACnACYAAwABAAYAAACoACYAAwABAAYAAACpACYAAwABAAYAAACqACYAAwABAAYAAACrACYAAwABAAYAAACcACQAAwABAAYAAACdACQAAwABAAYAAACeACQAAwABAAYAAACfACQAAwAJAAEAAACgACQAAwAJAAEAAAChACQAAwABAAYAAACiACQAAwABAAYAAACjACQAAwABAAYAAACkACQAAwABAAYAAAClACQAAwABAAYAAACmACQAAwABAAYAAACnACQAAwABAAYAAACoACQAAwABAAYAAACpACQAAwABAAYAAACqACQAAwABAAYAAACrACQAAwABAAYAAACsACQAAwABAAYAAACsACUAAwABAAYAAACtACUAAwAGAAAAAACtACYAAwAGAAEAAACsACYAAwABAAYAAACtACQAAwABAAYAAACuACUAAwABAAYAAACuACYAAwAHAAEAAACvACQAAwABAAYAAACvACUAAwABAAYAAACvACYAAwABAAYAAACwACQAAwABAAYAAACwACUAAwABAAYAAACwACYAAwABAAYAAACxACQAAwABAAYAAACxACUAAwABAAYAAACxACYAAwABAAYAAACyACQAAwABAAYAAACyACUAAwABAAYAAACyACYAAwABAAYAAACzACQAAwABAAYAAACzACUAAwABAAYAAACzACYAAwABAAYAAAC0ACQAAwABAAYAAAC0ACUAAwABAAYAAAC0ACYAAwABAAYAAAC1ACQAAwABAAYAAAC1ACUAAwABAAYAAAC1ACYAAwABAAYAAAC2ACQAAwABAAYAAAC2ACUAAwABAAYAAAC2ACYAAwABAAYAAAC3ACQAAwABAAYAAAC3ACUAAwABAAYAAAC3ACYAAwABAAYAAAC4ACQAAwABAAYAAAC4ACUAAwABAAYAAAC4ACYAAwABAAYAAAC5ACQAAwABAAYAAAC5ACUAAwABAAYAAAC5ACYAAwABAAYAAAC6ACQAAwABAAYAAAC6ACUAAwABAAYAAAC6ACYAAwAFAAkAAAC7ACQAAwABAAYAAAC7ACUAAwABAAYAAAC7ACYAAwAGAAkAAAC8ACQAAwABAAYAAAC8ACUAAwABAAYAAAC8ACYAAwABAAYAAAC9ACQAAwABAAYAAAC9ACUAAwABAAYAAAC9ACYAAwABAAYAAAC+ACQAAwABAAYAAAC+ACUAAwABAAYAAAC+ACYAAwABAAYAAAC/ACQAAwABAAYAAAC/ACUAAwABAAYAAAC/ACYAAwABAAYAAADAACQAAwABAAYAAADAACUAAwABAAYAAADAACYAAwABAAYAAADBACQAAwABAAYAAADBACUAAwABAAYAAADBACYAAwABAAYAAADCACQAAwABAAYAAADCACUAAwABAAYAAADCACYAAwABAAYAAADDACQAAwABAAYAAADDACUAAwABAAYAAADDACYAAwABAAYAAADEACQAAwABAAYAAADEACUAAwABAAYAAADEACYAAwABAAYAAADFACQAAwABAAYAAADFACUAAwABAAYAAADFACYAAwABAAYAAADGACQAAwABAAYAAADGACUAAwABAAYAAADGACYAAwABAAYAAADHACQAAwABAAYAAADHACUAAwABAAYAAADHACYAAwABAAYAAADIACQAAwABAAYAAADIACUAAwABAAYAAADIACYAAwABAAYAAADJACQAAwABAAYAAADJACUAAwABAAYAAADJACYAAwABAAYAAADKACQAAwABAAYAAADKACUAAwABAAYAAADKACYAAwABAAYAAADLACQAAwABAAYAAADLACUAAwABAAYAAADLACYAAwABAAYAAADMACQAAwABAAYAAADMACUAAwABAAYAAADMACYAAwABAAYAAADNACQAAwABAAYAAADNACUAAwABAAYAAADNACYAAwABAAYAAADOACQAAwABAAYAAADOACUAAwABAAYAAADOACYAAwABAAYAAADPACQAAwABAAYAAADPACUAAwABAAYAAADPACYAAwABAAYAAADQACQAAwABAAYAAADQACUAAwABAAYAAADQACYAAwABAAYAAADRACQAAwABAAYAAADRACUAAwABAAYAAADRACYAAwABAAYAAADSACQAAwABAAYAAADSACUAAwABAAYAAADSACYAAwABAAYAAADTACQAAwABAAYAAADTACUAAwABAAYAAADTACYAAwABAAYAAADUACQAAwABAAYAAADUACUAAwABAAYAAADUACYAAwABAAYAAADVACQAAwABAAYAAADVACUAAwABAAYAAADVACYAAwABAAYAAADWACQAAwABAAYAAADWACUAAwABAAYAAADWACYAAwABAAYAAADXACQAAwABAAYAAADXACUAAwABAAYAAADXACYAAwABAAYAAADYACQAAwABAAYAAADYACUAAwABAAYAAADYACYAAwABAAYAAADZACQAAwABAAYAAADZACUAAwABAAYAAADZACYAAwABAAYAAADaACQAAwABAAYAAADaACUAAwABAAYAAADaACYAAwABAAYAAADbACQAAwABAAYAAADbACUAAwABAAYAAADbACYAAwABAAYAAADcACQAAwABAAYAAADcACUAAwABAAYAAADcACYAAwABAAYAAADdACQAAwABAAYAAADdACUAAwABAAYAAADdACYAAwABAAYAAADeACQAAwABAAYAAADeACUAAwABAAYAAADeACYAAwABAAYAAADfACQAAwABAAYAAADfACUAAwABAAYAAADfACYAAwABAAYAAADgACQAAwABAAYAAADgACUAAwABAAYAAADgACYAAwABAAYAAADhACQAAwABAAYAAADhACUAAwABAAYAAADhACYAAwABAAYAAADiACQAAwABAAYAAADiACUAAwABAAYAAADiACYAAwABAAYAAADjACQAAwABAAYAAADjACUAAwABAAYAAADjACYAAwABAAYAAADkACQAAwABAAYAAADkACUAAwABAAYAAADkACYAAwABAAYAAADlACQAAwABAAYAAADlACUAAwABAAYAAADlACYAAwABAAYAAADmACQAAwABAAYAAADmACUAAwABAAYAAADmACYAAwABAAYAAADrACEAAwABAAYAAADrACIAAwABAAYAAADsACEAAwABAAYAAADsACIAAwABAAYAAADtACEAAwABAAYAAADtACIAAwABAAYAAADuACEAAwABAAYAAADuACIAAwABAAYAAADvACEAAwABAAYAAADvACIAAwABAAYAAADwACEAAwABAAYAAADwACIAAwABAAYAAADxACEAAwABAAYAAADxACIAAwABAAYAAAD1AB4AAwABAAYAAAD1AB8AAwABAAYAAAD2AB4AAwABAAYAAAD2AB8AAwABAAYAAAD3AB4AAwABAAYAAAD3AB8AAwABAAYAAAD4AB4AAwABAAYAAAD4AB8AAwABAAYAAAD5AB4AAwABAAYAAAD5AB8AAwABAAYAAAD6AB4AAwABAAYAAAD6AB8AAwABAAYAAAD7AB4AAwABAAYAAAD7AB8AAwABAAYAAAD8AB4AAwABAAYAAAD8AB8AAwABAAYAAAABARoAAwABAAYAAAABARsAAwABAAYAAAACARoAAwABAAYAAAACARsAAwABAAYAAAADARoAAwABAAYAAAADARsAAwABAAYAAAAEARoAAwABAAYAAAAEARsAAwABAAYAAAAFARoAAwABAAYAAAAFARsAAwABAAYAAAAGARoAAwABAAYAAAAGARsAAwABAAYAAAAHARoAAwABAAYAAAAHARsAAwABAAYAAAALARcAAwABAAYAAAALARgAAwABAAYAAAAMARcAAwABAAYAAAAMARgAAwABAAYAAAANARcAAwABAAYAAAANARgAAwABAAYAAAAOARcAAwABAAYAAAAOARgAAwABAAYAAAAPARcAAwABAAYAAAAPARgAAwABAAYAAAAQARcAAwABAAYAAAAQARgAAwABAAYAAAARARcAAwABAAYAAAARARgAAwABAAYAAAASARcAAwABAAYAAAASARgAAwABAAYAAAAVARQAAwABAAYAAAAVARUAAwABAAYAAAAWARQAAwABAAYAAAAWARUAAwABAAYAAAAXARQAAwABAAYAAAAXARUAAwABAAYAAAAYARQAAwABAAYAAAAYARUAAwABAAYAAAAZARQAAwABAAYAAAAZARUAAwABAAYAAAAaARQAAwABAAYAAAAaARUAAwABAAYAAAAbARQAAwABAAYAAAAbARUAAwABAAYAAAAcARQAAwABAAYAAAAcARUAAwABAAYAAAAcARYAAwABAAYAAAAcARcAAwABAAYAAAAdARYAAwABAAYAAAAdARcAAwABAAYAAAAeARYAAwABAAYAAAAeARcAAwABAAYAAAAfARYAAwABAAYAAAAfARcAAwABAAYAAAAgARYAAwABAAYAAAAgARcAAwABAAYAAAAhARYAAwABAAYAAAAhARcAAwABAAYAAAAiARYAAwABAAYAAAAiARcAAwABAAYAAAAjARYAAwABAAYAAAAjARcAAwABAAYAAAAkARYAAwABAAYAAAAkARcAAwABAAYAAAAlARYAAwABAAYAAAAlARcAAwABAAYAAAAmARYAAwABAAYAAAAmARcAAwABAAYAAAAnARYAAwABAAYAAAAnARcAAwABAAYAAAAoARYAAwABAAYAAAAoARcAAwABAAYAAAApARYAAwABAAYAAAApARcAAwABAAYAAAAqARYAAwABAAYAAAAqARcAAwABAAYAAAArARYAAwABAAYAAAArARcAAwABAAYAAAAsARYAAwABAAYAAAAsARcAAwABAAYAAAAtARYAAwABAAYAAAAtARcAAwABAAYAAAAuARYAAwABAAYAAAAuARcAAwABAAYAAAAvARYAAwABAAYAAAAvARcAAwABAAYAAAAqARUAAwADAAgAAACsACMAAwABAAYAAACsACIAAwABAAYAAACtACIAAwABAAYAAACuACIAAwABAAYAAACvACIAAwABAAYAAACwACIAAwABAAYAAACxACIAAwABAAYAAACtACMAAwABAAYAAACuACMAAwABAAYAAACvACMAAwABAAYAAACwACMAAwABAAYAAACxACMAAwABAAYAAADRACIAAwABAAYAAADRACMAAwABAAYAAADSACIAAwABAAYAAADSACMAAwABAAYAAADTACIAAwABAAYAAADTACMAAwABAAYAAADUACIAAwABAAYAAADUACMAAwABAAYAAADVACIAAwABAAYAAADVACMAAwABAAYAAADWACIAAwABAAYAAADWACMAAwABAAYAAADXACIAAwABAAYAAADXACMAAwABAAYAAADiAB8AAwABAAYAAADiACAAAwABAAYAAADiACEAAwABAAYAAADiACIAAwABAAYAAADiACMAAwABAAYAAADjAB8AAwABAAYAAADjACAAAwABAAYAAADjACEAAwABAAYAAADjACIAAwABAAYAAADjACMAAwABAAYAAADkAB8AAwABAAYAAADkACAAAwABAAYAAADkACEAAwABAAYAAADkACIAAwABAAYAAADkACMAAwABAAYAAADlAB8AAwABAAYAAADlACAAAwABAAYAAADlACEAAwABAAYAAADlACIAAwABAAYAAADlACMAAwABAAYAAACeAB8AAwABAAYAAACeACAAAwABAAYAAACeACEAAwABAAYAAACeACIAAwABAAYAAACeACMAAwABAAYAAACfAB8AAwABAAYAAACfACAAAwABAAYAAACfACEAAwAJAAAAAACfACIAAwAJAAEAAACfACMAAwAJAAEAAACgAB8AAwABAAYAAACgACAAAwABAAYAAACgACEAAwAJAAAAAACgACIAAwAJAAEAAACgACMAAwAJAAEAAAChAB8AAwABAAYAAAChACAAAwABAAYAAAChACEAAwABAAYAAAChACIAAwABAAYAAAChACMAAwABAAYAAACuACQAAwABAAYAAAA=")
 tile_set = SubResource("TileSet_lvl2")
 
 [node name="Spawners" type="Node2D" parent="." unique_id=357375163]
@@ -377,26 +541,26 @@ target_type = 2
 [node name="Enemies" type="Node2D" parent="." unique_id=802286423]
 
 [node name="Enemy_Z1a" parent="Enemies" unique_id=160795391 instance=ExtResource("5_enemy")]
-position = Vector2(300, 584)
+position = Vector2(326, 576)
 
 [node name="Enemy_Z1b" parent="Enemies" unique_id=1447019753 instance=ExtResource("5_enemy")]
-position = Vector2(1150, 490)
+position = Vector2(984, 575)
 patrol_distance = 30.0
 
 [node name="Enemy_Z3a" parent="Enemies" unique_id=1967022922 instance=ExtResource("5_enemy")]
-position = Vector2(2800, 540)
+position = Vector2(2707, 575)
 patrol_distance = 30.0
 
 [node name="Enemy_Z3b" parent="Enemies" unique_id=1346224899 instance=ExtResource("5_enemy")]
-position = Vector2(3400, 540)
+position = Vector2(3400, 543)
 patrol_distance = 30.0
 
 [node name="Enemy_Z3c" parent="Enemies" unique_id=320738088 instance=ExtResource("5_enemy")]
-position = Vector2(3000, 584)
+position = Vector2(3000, 575)
 patrol_distance = 80.0
 
 [node name="Enemy_Z3d" parent="Enemies" unique_id=1596099662 instance=ExtResource("5_enemy")]
-position = Vector2(3200, 584)
+position = Vector2(3201, 575)
 patrol_distance = 80.0
 
 [node name="Enemy_Z4a" parent="Enemies" unique_id=659852731 instance=ExtResource("5_enemy")]
@@ -404,7 +568,7 @@ position = Vector2(3990, 480)
 patrol_distance = 30.0
 
 [node name="Enemy_Z4b" parent="Enemies" unique_id=81537165 instance=ExtResource("5_enemy")]
-position = Vector2(4330, 370)
+position = Vector2(4337, 366)
 patrol_distance = 30.0
 
 [node name="KillZone_1" type="Area2D" parent="." unique_id=926730025]
@@ -412,6 +576,7 @@ position = Vector2(630, 760)
 script = ExtResource("6_killzone")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="KillZone_1" unique_id=111866997]
+position = Vector2(0, -110)
 shape = SubResource("pit_med")
 
 [node name="KillZone_2" type="Area2D" parent="." unique_id=819219216]
@@ -419,6 +584,7 @@ position = Vector2(1150, 760)
 script = ExtResource("6_killzone")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="KillZone_2" unique_id=931617534]
+position = Vector2(6, -119)
 shape = SubResource("pit_med")
 
 [node name="KillZone_Big" type="Area2D" parent="." unique_id=272121526]
