@@ -4,44 +4,58 @@ extends BaseEnemy
 ## Walks left and right between two patrol bounds.
 ## Dies to a single stomp when unarmored; an armored one needs a melee hit first.
 
-## Body tint while armored. The unarmored tint comes from the scene, so the
-## .tscn stays the source of truth for the enemy's normal look.
+## Body tint while armored, used only by the ColorRect fallback (before the walk
+## textures are assigned). With textures, armor shows through its own frame set.
 const ARMOR_COLOR := Color(0.62, 0.66, 0.72)
 
 @export var patrol_speed: float = 80.0
 @export var patrol_distance: float = 120.0  ## Distance from spawn to each side
+
+# --- Texturas del enemigo ---
+# Arrastra cada imagen a su ranura en el Inspector del nodo EnemyBasic.
+# Mientras falten las 4 del set que toca (normal o con armadura), el enemigo usa
+# el ColorRect de la escena con el comportamiento anterior (no se rompe nada).
+# Un enemigo SIN armadura solo necesita el set normal; uno CON armadura necesita
+# los dos sets (el normal es el que se muestra tras romperle la armadura).
+@export_group("Texturas: caminar (normal)")
+## Caminando a la derecha, pie derecho adelante.
+@export var walk_right_a: Texture2D
+## Caminando a la derecha, pie izquierdo adelante.
+@export var walk_right_b: Texture2D
+## Caminando a la izquierda, pie derecho adelante.
+@export var walk_left_a: Texture2D
+## Caminando a la izquierda, pie izquierdo adelante.
+@export var walk_left_b: Texture2D
+
+@export_group("Texturas: caminar (con armadura)")
+## Con armadura, a la derecha, pie derecho adelante.
+@export var armor_walk_right_a: Texture2D
+## Con armadura, a la derecha, pie izquierdo adelante.
+@export var armor_walk_right_b: Texture2D
+## Con armadura, a la izquierda, pie derecho adelante.
+@export var armor_walk_left_a: Texture2D
+## Con armadura, a la izquierda, pie izquierdo adelante.
+@export var armor_walk_left_b: Texture2D
+
+@export_group("Animación")
+## Segundos por cuadro del ciclo de dos pasos (más bajo = pasos más rápidos).
+@export var walk_frame_time: float = 0.15
 
 var _spawn_position: Vector2
 var _direction: float = 1.0
 var _gravity: float = ProjectSettings.get_setting("physics/2d/default_gravity")
 var _base_color: Color
 
+## Two-foot walk cycle: which foot frame shows and the timer between swaps.
+var _foot: int = 0
+var _foot_timer: float = 0.0
+
 
 func _ready() -> void:
+	super._ready()  # wires $StompArea
 	_spawn_position = global_position
 	_base_color = $Sprite.color
-	if has_armor:
-		$Sprite.color = ARMOR_COLOR
-	armor_broken.connect(_on_armor_broken)
-	$StompArea.body_entered.connect(_on_stomp_area_body_entered)
-
-
-func _on_armor_broken() -> void:
-	$Sprite.color = _base_color
-
-
-func _on_stomp_area_body_entered(body: Node2D) -> void:
-	if not (body is CharacterBody2D and body.is_in_group("player")):
-		return
-	# Position-based stomp check: the player must be above this enemy at the
-	# moment of overlap. Using velocity.y > 0 is unreliable because
-	# move_and_slide can zero the velocity on landing before Area2D signals
-	# fire, causing the stomp to be missed inconsistently (Godot physics
-	# resolution order depends on relative fall speed and geometry).
-	if body.global_position.y < global_position.y:
-		# The bounce is unconditional: armor stops the damage, not the stomp.
-		body.notify_stomp_hit()
-		take_damage(1, DamageType.STOMP)  # inherited from BaseEnemy
+	_update_visual(0.0)
 
 
 func _physics_process(delta: float) -> void:
@@ -56,6 +70,7 @@ func _physics_process(delta: float) -> void:
 		velocity.x = _knockback_velocity_x
 		move_and_slide()
 		_check_player_contact()
+		_update_visual(delta)
 		return
 
 	# Patrol movement
@@ -74,22 +89,56 @@ func _physics_process(delta: float) -> void:
 	if is_on_wall():
 		_direction *= -1.0
 
-
-## Kills the player when THIS enemy walks into them from the side or below,
-## which the player's own slide-collision check misses while standing still.
-## Near-vertical contacts are stomps (the player landed on top) and are left to
-## StompArea, so only side/below contacts are lethal here.
-func _check_player_contact() -> void:
-	for i in get_slide_collision_count():
-		var collision := get_slide_collision(i)
-		var collider := collision.get_collider()
-		if collider is CharacterBody2D and (collider as CharacterBody2D).is_in_group("player"):
-			if EnemyBasic.is_side_contact(collision.get_normal().y):
-				LevelManager.handle_player_death()
-				return
+	_update_visual(delta)
 
 
-## True when a body-contact normal means a side/bottom hit (lethal to the
-## player). Near-vertical normals mean the player is on top (a stomp).
-static func is_side_contact(normal_y: float) -> bool:
-	return absf(normal_y) < 0.7
+# --- Visuals ---
+
+## Drives the animated sprite when the current walk set (armored or normal) is
+## assigned; otherwise keeps the ColorRect fallback with the armor tint.
+func _update_visual(delta: float) -> void:
+	if not _has_walk_frames(has_armor):
+		$Sprite.visible = true
+		$Anim.visible = false
+		$Sprite.color = ARMOR_COLOR if has_armor else _base_color
+		return
+
+	$Sprite.visible = false
+	$Anim.visible = true
+	$Anim.modulate = Color.WHITE
+
+	# Advance the two-foot cycle only while actually moving.
+	if absf(velocity.x) > 5.0:
+		_foot_timer += delta
+		if _foot_timer >= walk_frame_time:
+			_foot_timer -= walk_frame_time
+			_foot = 1 - _foot
+	else:
+		_foot_timer = 0.0
+		_foot = 0
+
+	$Anim.texture = _current_frame()
+
+
+## Picks the texture from the current set (armored/normal), direction and foot.
+func _current_frame() -> Texture2D:
+	if has_armor:
+		if _direction >= 0.0:
+			return armor_walk_right_a if _foot == 0 else armor_walk_right_b
+		return armor_walk_left_a if _foot == 0 else armor_walk_left_b
+	if _direction >= 0.0:
+		return walk_right_a if _foot == 0 else walk_right_b
+	return walk_left_a if _foot == 0 else walk_left_b
+
+
+## True once the four textures of the requested set are all assigned.
+func _has_walk_frames(armored: bool) -> bool:
+	if armored:
+		return (
+			armor_walk_right_a != null and armor_walk_right_b != null
+			and armor_walk_left_a != null and armor_walk_left_b != null
+		)
+	return (
+		walk_right_a != null and walk_right_b != null
+		and walk_left_a != null and walk_left_b != null
+	)
