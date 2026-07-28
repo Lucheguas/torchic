@@ -4,3 +4,7 @@
 
 # GdUnit4 test run artifacts
 reports/
+
+# Exports / builds (se distribuyen por GitHub Releases, no en el repo)
+build/
+*.zip

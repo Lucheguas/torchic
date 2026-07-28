@@ -16,6 +16,8 @@ Un platformer 2D pixel art hecho en **Godot 4.7**, con GDScript.
 
 > ⚠️ Al ser un ejecutable sin firmar, Windows puede mostrar el aviso *"Windows protegió tu PC"*. Haz clic en **Más información → Ejecutar de todas formas**. Es normal en juegos independientes.
 
+> 🛠️ ¿Vas a generar tú una nueva versión? Sigue la guía [docs/BUILD_Y_RELEASE.md](docs/BUILD_Y_RELEASE.md).
+
 ---
 
 ## ✨ Características
