@@ -273,8 +273,37 @@ Añade un `LevelConfigData` al array `levels` con:
 ## 9. Escena "entre niveles" (`entre_nivel.tscn`)
 - Es la escena puente entre pisos. **Embebe su propio Player**; el manager la cablea con
   `_setup_player_and_camera()` al cargarla.
-- Su salida es una `Area2D` con `target_type = 2` (NEXT_FLOOR) que dispara `exit_entre_nivel()` →
-  carga el siguiente piso. Durante la estancia, el manager **precarga** la escena del piso siguiente.
+- Su salida es un `TransitionTrigger` (`ExitTrigger`) que dispara `exit_entre_nivel()` → carga el
+  siguiente piso. Durante la estancia, el manager **precarga** la escena del piso siguiente.
+- Si ya no hay piso siguiente registrado, `exit_entre_nivel()` termina la partida y vuelve al menú.
+
+### 9.1 BUG ABIERTO: caída infinita por los bordes del suelo
+
+**Síntoma**: el jugador se sale del suelo del entre_nivel y cae para siempre. No pierde vida, no
+reaparece y no puede volver: la partida queda colgada y hay que cerrar el juego.
+
+**Reproducción** (verificado en Godot 4.7.1): entrar al entre_nivel y caminar ~50 px a la izquierda
+desde el spawn. Traza del jugador cayendo, con el estado y las vidas intactos:
+
+```
+pos=(-40.0,  654.1) estado=ENTRE_NIVEL vidas=3
+pos=(-40.0, 1374.1) estado=ENTRE_NIVEL vidas=3
+pos=(-40.0, 2094.1) estado=ENTRE_NIVEL vidas=3
+pos=(-40.0, 2829.1) estado=ENTRE_NIVEL vidas=3
+```
+
+**Causa**: `Environment/Ground` cubre solo `x ∈ [0, 960]` y el Player nace en `x = 48`, así que el
+borde izquierdo está a media docena de pasos. El mismo hueco existe a la derecha, pasando el
+`ExitTrigger` (`x ∈ [928, 960]`). La escena no tiene ni paredes ni `KillZone`.
+
+**Por qué no alcanza una `KillZone`**: `LevelManager.handle_player_death()` ignora las muertes
+cuando el estado no es `PLAYING_MAIN_LEVEL` (ver sección 8.3 y la decisión de no aceptar muertes a
+media transición). En `ENTRE_NIVEL` la llamada retorna sin hacer nada, así que una zona de muerte
+ahí sería código muerto.
+
+**Arreglo previsto**: cerrar la escena físicamente — dos `StaticBody2D` invisibles en los extremos
+del suelo, o extender el `Ground` más allá del encuadre de la cámara. Es un cambio de escena; no
+tocar el pipeline de muerte para esto.
 
 ---
 

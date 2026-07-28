@@ -1,9 +1,6 @@
 class_name KillZone
 extends Area2D
 ## Kills the player on contact. Delegates respawn to LevelManager.handle_player_death().
-## The respawn_position export is preserved for scene compatibility only.
-
-@export var respawn_position: Vector2 = Vector2(100, 570)  # retained but unused
 
 
 func _ready() -> void:

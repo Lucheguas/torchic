@@ -36,12 +36,24 @@ func preload_scene(scene_path: String) -> void:
 ## leave their groups this frame) and queues it for deletion. queue_free() alone
 ## is deferred, which would leave the old scene's player overlapping the newly
 ## loaded one for a frame.
+## Inside a physics step the engine forbids detaching CollisionObject nodes
+## (deaths arrive from Area2D/body callbacks), so that case is deferred.
 func unload_scene(scene_root: Node) -> void:
-	if scene_root and is_instance_valid(scene_root):
-		var parent := scene_root.get_parent()
-		if parent:
-			parent.remove_child(scene_root)
-		scene_root.queue_free()
+	if not (scene_root and is_instance_valid(scene_root)):
+		return
+	if Engine.is_in_physics_frame():
+		_detach_and_free.call_deferred(scene_root)
+		return
+	_detach_and_free(scene_root)
+
+
+func _detach_and_free(scene_root: Node) -> void:
+	if not is_instance_valid(scene_root):
+		return
+	var parent := scene_root.get_parent()
+	if parent:
+		parent.remove_child(scene_root)
+	scene_root.queue_free()
 
 
 # --- Private Methods ---

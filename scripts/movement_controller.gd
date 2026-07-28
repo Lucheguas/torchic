@@ -73,8 +73,6 @@ var _previous_velocity_y: float = 0.0
 
 # --- Sprites del personaje ---
 # Arrastra cada imagen a su ranura en el Inspector del nodo Player.
-# Mientras falte alguna de las 4 de correr, se usa el sprite de la escena con el
-# comportamiento anterior (no se rompe nada).
 @export_group("Sprites del personaje")
 ## Frente: quieto, mirando al jugador.
 @export var idle_front_texture: Texture2D
@@ -93,29 +91,9 @@ var _previous_velocity_y: float = 0.0
 ## idle so the weapon keeps pointing where the player last faced.
 var _facing: float = 1.0
 
-## Side/profile texture captured from the scene; shown while moving in fallback
-## mode (before the run textures are assigned).
-var _side_texture: Texture2D
-
 ## Walk-cycle state: timer between foot swaps and which foot frame is showing.
 var _walk_frame_timer: float = 0.0
 var _walk_frame: int = 0
-
-# --- Animation State ---
-var walk_time: float = 0.0
-var _base_sprite_scale: Vector2 = Vector2.ONE
-const BOB_SPEED = 14.0
-const BOB_AMOUNT = 3.0
-const TILT_AMOUNT = 0.05
-const SQUASH_AMOUNT = 0.03
-
-
-func _ready() -> void:
-	# Capture the sprite's scale from the scene so procedural animation
-	# multiplies onto it instead of resetting it to 1.0.
-	_base_sprite_scale = $Sprite2D.scale
-	# The scene texture is the profile/side view used while moving.
-	_side_texture = $Sprite2D.texture
 
 # --- Public Setter Methods ---
 
@@ -161,8 +139,8 @@ func _calculate_effective_speed() -> float:
 # --- Static Utility Functions (Pure, for testing) ---
 
 ## Calculates the effective horizontal speed.
-static func calculate_effective_speed(base_pixel_speed: float, base_speed: float, speed_modifier: float) -> float:
-	return base_pixel_speed * (base_speed + speed_modifier)
+static func calculate_effective_speed(pixel_speed: float, base_speed: float, speed_modifier: float) -> float:
+	return pixel_speed * (base_speed + speed_modifier)
 
 
 ## Applies gravity to the current vertical velocity, respecting terminal velocity.
@@ -205,7 +183,7 @@ func _physics_process(delta: float) -> void:
 	var direction := Input.get_axis("move_left", "move_right")
 	if direction != 0.0:
 		_facing = signf(direction)
-	_update_character_visual(delta, direction)
+	_animate_frames(delta, direction != 0.0)
 
 	# Melee attack — always swing toward the last moved direction, even if the
 	# character is currently facing front while idle.
@@ -213,43 +191,14 @@ func _physics_process(delta: float) -> void:
 		$MeleeAttack.trigger(_facing)
 
 
-## Chooses the character texture for this frame. If the four run textures are
-## assigned, plays the two-foot walk cycle per direction and shows the front
-## texture while idle. Otherwise falls back to the previous single-texture bob.
-func _update_character_visual(delta: float, direction: float) -> void:
-	if _has_run_frames():
-		_animate_frames(delta, direction != 0.0)
-		return
-
-	# Fallback (aún sin las imágenes de correr): textura de la escena + bob.
-	if direction != 0.0:
-		$Sprite2D.texture = _side_texture
-		$Sprite2D.flip_h = _facing < 0.0
-	elif idle_front_texture != null:
-		$Sprite2D.texture = idle_front_texture
-		$Sprite2D.flip_h = false
-	_animate_walk(delta, direction)
-
-
-## True once the four directional run textures are assigned in the Inspector.
-func _has_run_frames() -> bool:
-	return (
-		run_right_a_texture != null and run_right_b_texture != null
-		and run_left_a_texture != null and run_left_b_texture != null
-	)
-
-
 ## Frame-based walk: alternates the two foot textures for the current direction
 ## while moving, and shows the idle front texture while stopped. The left/right
 ## textures are dedicated art, so no horizontal flip is used.
 func _animate_frames(delta: float, moving: bool) -> void:
-	$Sprite2D.flip_h = false
-
 	if not moving:
 		_walk_frame_timer = 0.0
 		_walk_frame = 0
-		if idle_front_texture != null:
-			$Sprite2D.texture = idle_front_texture
+		_set_texture(idle_front_texture)
 		return
 
 	_walk_frame_timer += delta
@@ -258,24 +207,16 @@ func _animate_frames(delta: float, moving: bool) -> void:
 		_walk_frame = 1 - _walk_frame
 
 	if _facing >= 0.0:
-		$Sprite2D.texture = run_right_a_texture if _walk_frame == 0 else run_right_b_texture
+		_set_texture(run_right_a_texture if _walk_frame == 0 else run_right_b_texture)
 	else:
-		$Sprite2D.texture = run_left_a_texture if _walk_frame == 0 else run_left_b_texture
+		_set_texture(run_left_a_texture if _walk_frame == 0 else run_left_b_texture)
 
 
-func _animate_walk(delta: float, direction: float) -> void:
-	if direction != 0.0 and is_on_floor():
-		walk_time += delta * BOB_SPEED
-		$Sprite2D.position.y = sin(walk_time) * BOB_AMOUNT
-		$Sprite2D.rotation = sin(walk_time) * TILT_AMOUNT
-		$Sprite2D.scale.x = _base_sprite_scale.x * (1.0 + cos(walk_time * 2.0) * SQUASH_AMOUNT)
-		$Sprite2D.scale.y = _base_sprite_scale.y * (1.0 - cos(walk_time * 2.0) * SQUASH_AMOUNT)
-	else:
-		walk_time = 0.0
-		$Sprite2D.position.y = lerp($Sprite2D.position.y, 0.0, 0.2)
-		$Sprite2D.rotation = lerp($Sprite2D.rotation, 0.0, 0.2)
-		$Sprite2D.scale.x = lerp($Sprite2D.scale.x, _base_sprite_scale.x, 0.2)
-		$Sprite2D.scale.y = lerp($Sprite2D.scale.y, _base_sprite_scale.y, 0.2)
+## Una ranura de sprite vacía en el Inspector dejaría al personaje invisible;
+## en ese caso se mantiene el cuadro anterior.
+func _set_texture(texture: Texture2D) -> void:
+	if texture != null:
+		$Sprite2D.texture = texture
 
 # --- Private Handler Methods ---
 

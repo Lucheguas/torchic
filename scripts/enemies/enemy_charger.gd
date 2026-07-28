@@ -69,6 +69,10 @@ enum RangeBand { NONE, MELEE, CHARGE }
 const ARMOR_COLOR := Color(0.62, 0.66, 0.72)
 ## Warning flash while telegraphing an attack.
 const WINDUP_COLOR := Color(1.0, 0.85, 0.2)
+## Brief red flash when the enemy takes a hit, so the player can tell the strike
+## landed even when the enemy survives (armored charger, high-hp boss).
+const HIT_FLASH_COLOR := Color(1.0, 0.35, 0.35)
+const HIT_FLASH_DURATION := 0.12
 ## Vertical offset used for the line-of-sight ray so it aims at torso height
 ## instead of the feet, where it would clip ledges.
 const SIGHT_EYE_OFFSET := Vector2(0, -16)
@@ -87,6 +91,8 @@ var _facing: float = 1.0
 ## Two-foot walk cycle: which foot frame shows and the timer between swaps.
 var _foot: int = 0
 var _foot_timer: float = 0.0
+## Countdown for the on-hit flash; positive means the enemy is flashing.
+var _hit_flash_timer: float = 0.0
 
 
 func _ready() -> void:
@@ -94,6 +100,15 @@ func _ready() -> void:
 	_spawn_position = global_position
 	_base_color = $Sprite.color
 	_update_visual(0.0)
+
+
+## Flashes on any hit that actually connects (armor breaking or hp loss) so the
+## strike reads clearly. Absorbed stomps on armor don't flash — nothing happened.
+func take_damage(amount: int, type: DamageType) -> void:
+	var had_armor := has_armor
+	super.take_damage(amount, type)
+	if had_armor != has_armor or not had_armor:
+		_hit_flash_timer = HIT_FLASH_DURATION
 
 
 func _physics_process(delta: float) -> void:
@@ -106,6 +121,7 @@ func _physics_process(delta: float) -> void:
 		velocity.x = _knockback_velocity_x
 		move_and_slide()
 		_check_player_contact()
+		_update_visual(delta)  # keep the hit flash visible during the recoil
 		return
 
 	match _state:
@@ -317,6 +333,8 @@ func _face_toward(target: Node2D) -> float:
 ## the ColorRect fallback. Also applies the readability tint (armor grey while
 ## armored, warning flash while telegraphing) to whichever visual is active.
 func _update_visual(delta: float) -> void:
+	if _hit_flash_timer > 0.0:
+		_hit_flash_timer -= delta
 	var tint := _current_tint()
 
 	if not _has_frames():
@@ -359,6 +377,8 @@ func _current_frame() -> Texture2D:
 ## White = no tint. Grey while armored, warning color while telegraphing an
 ## attack (windup); telegraph wins over armor so the tell is always readable.
 func _current_tint() -> Color:
+	if _hit_flash_timer > 0.0:
+		return HIT_FLASH_COLOR
 	if _state == State.WINDUP or _state == State.ATTACK_WINDUP:
 		return WINDUP_COLOR
 	if has_armor:
