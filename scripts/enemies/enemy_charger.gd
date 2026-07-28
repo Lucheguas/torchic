@@ -41,33 +41,29 @@ enum RangeBand { NONE, MELEE, CHARGE }
 @export_group("Fall")
 @export var fall_kill_offset: float = 400.0  ## Removed once it drops this far below spawn
 
-# --- Texturas del enemigo ---
+# --- Texturas del enemigo (2 cuadros por lado) ---
 # Arrastra cada imagen a su ranura en el Inspector del nodo EnemyCharger.
-# Mientras falte cualquiera de las 8, el enemigo usa el ColorRect de la escena
-# con el comportamiento anterior (no se rompe nada).
-@export_group("Texturas: caminar")
-## Caminando a la derecha, pie derecho adelante.
-@export var walk_right_a: Texture2D
-## Caminando a la derecha, pie izquierdo adelante.
-@export var walk_right_b: Texture2D
-## Caminando a la izquierda, pie derecho adelante.
-@export var walk_left_a: Texture2D
-## Caminando a la izquierda, pie izquierdo adelante.
-@export var walk_left_b: Texture2D
+# Los mismos dos cuadros por lado se usan para caminar y para embestir: caminando
+# se alternan a ritmo normal; embistiendo se alternan más rápido para que parezca
+# que corre. Mientras falte cualquiera de los 4, el enemigo usa el ColorRect de la
+# escena (no se rompe nada).
+@export_group("Texturas: derecha")
+## Mirando a la derecha, cuadro 1 (CHARGERDERECHA1).
+@export var sprite_right_1: Texture2D
+## Mirando a la derecha, cuadro 2 (CHARGERDERECHA2).
+@export var sprite_right_2: Texture2D
 
-@export_group("Texturas: embestir")
-## Embistiendo a la derecha, pie derecho adelante.
-@export var charge_right_a: Texture2D
-## Embistiendo a la derecha, pie izquierdo adelante.
-@export var charge_right_b: Texture2D
-## Embistiendo a la izquierda, pie derecho adelante.
-@export var charge_left_a: Texture2D
-## Embistiendo a la izquierda, pie izquierdo adelante.
-@export var charge_left_b: Texture2D
+@export_group("Texturas: izquierda")
+## Mirando a la izquierda, cuadro 1 (CHARGERIZQUIERDA1).
+@export var sprite_left_1: Texture2D
+## Mirando a la izquierda, cuadro 2 (CHARGERIZQUIERDA2).
+@export var sprite_left_2: Texture2D
 
 @export_group("Animación")
-## Segundos por cuadro del ciclo de dos pasos (más bajo = pasos más rápidos).
-@export var walk_frame_time: float = 0.15
+## Segundos por cuadro caminando (ritmo normal).
+@export var walk_frame_time: float = 0.18
+## Segundos por cuadro embistiendo (más bajo = alternancia rápida, "corre").
+@export var charge_frame_time: float = 0.06
 
 ## Body tint while armored (matches EnemyBasic so armor reads the same).
 const ARMOR_COLOR := Color(0.62, 0.66, 0.72)
@@ -334,12 +330,17 @@ func _update_visual(delta: float) -> void:
 	$Anim.visible = true
 	$Anim.modulate = tint
 
-	# Advance the two-foot cycle only while actually moving; plant on foot 0
-	# when standing (windup/recover).
+	# Same two frames per side for walk and charge; alternate faster while
+	# charging/lunging so it reads as running instead of walking.
+	var charging := _state == State.CHARGE or _state == State.ATTACK_LUNGE
+	var frame_time := charge_frame_time if charging else walk_frame_time
+
+	# Advance the cycle only while actually moving; plant on frame 0 when
+	# standing (windup/recover).
 	if absf(velocity.x) > 5.0:
 		_foot_timer += delta
-		if _foot_timer >= walk_frame_time:
-			_foot_timer -= walk_frame_time
+		if _foot_timer >= frame_time:
+			_foot_timer -= frame_time
 			_foot = 1 - _foot
 	else:
 		_foot_timer = 0.0
@@ -348,16 +349,11 @@ func _update_visual(delta: float) -> void:
 	$Anim.texture = _current_frame()
 
 
-## Picks the texture for this frame from the walk/charge set, direction and foot.
+## Picks the texture for this frame from the current side and cycle frame.
 func _current_frame() -> Texture2D:
-	var charging := _state == State.CHARGE or _state == State.ATTACK_LUNGE
-	if charging:
-		if _facing >= 0.0:
-			return charge_right_a if _foot == 0 else charge_right_b
-		return charge_left_a if _foot == 0 else charge_left_b
 	if _facing >= 0.0:
-		return walk_right_a if _foot == 0 else walk_right_b
-	return walk_left_a if _foot == 0 else walk_left_b
+		return sprite_right_1 if _foot == 0 else sprite_right_2
+	return sprite_left_1 if _foot == 0 else sprite_left_2
 
 
 ## White = no tint. Grey while armored, warning color while telegraphing an
@@ -370,11 +366,9 @@ func _current_tint() -> Color:
 	return Color.WHITE
 
 
-## True once all eight directional textures are assigned in the Inspector.
+## True once the four directional textures (2 per side) are assigned.
 func _has_frames() -> bool:
 	return (
-		walk_right_a != null and walk_right_b != null
-		and walk_left_a != null and walk_left_b != null
-		and charge_right_a != null and charge_right_b != null
-		and charge_left_a != null and charge_left_b != null
+		sprite_right_1 != null and sprite_right_2 != null
+		and sprite_left_1 != null and sprite_left_2 != null
 	)
