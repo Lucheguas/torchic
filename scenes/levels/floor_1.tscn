@@ -11,6 +11,7 @@
 [ext_resource type="Texture2D" uid="uid://d65roow3psir" path="res://resources/weapons/Weapons and Props.png" id="10_wi4sm"]
 [ext_resource type="Texture2D" uid="uid://c4gwufr3vek1f" path="res://Walls and Tiles.png" id="11_ipbav"]
 [ext_resource type="Texture2D" uid="uid://bmygcvh81vifx" path="res://level-2-asset-1.png" id="12_l71cr"]
+[ext_resource type="FontFile" uid="uid://qjfyllf6t72s" path="res://resources/ui/pixel_letters.fnt" id="13_font"]
 
 [sub_resource type="CompressedTexture2D" id="CompressedTexture2D_pc4wu"]
 load_path = "res://.godot/imported/Fondo WINDOWS.png-a0a2c668bec5c0600c2dc43be50ec166.ctex"
@@ -35,6 +36,12 @@ size = Vector2(141, 12)
 
 [sub_resource type="RectangleShape2D" id="world_floor_shape"]
 size = Vector2(5700, 64)
+
+[sub_resource type="RectangleShape2D" id="bounds_left_shape"]
+size = Vector2(32, 2400)
+
+[sub_resource type="RectangleShape2D" id="bounds_right_shape"]
+size = Vector2(32, 2400)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_unyho"]
 texture = ExtResource("8_pc4wu")
@@ -955,11 +962,24 @@ position = Vector2(5246, 609)
 shape = SubResource("ground_after_pit")
 
 [node name="MetaFlag" type="ColorRect" parent="Environment" unique_id=1975658858]
+visible = false
 offset_left = 5368.0
 offset_top = 469.0
 offset_right = 5384.0
 offset_bottom = 593.0
 color = Color(0.9, 0.8, 0.2, 1)
+
+[node name="Bounds_Left" type="StaticBody2D" parent="Environment"]
+position = Vector2(-16, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Bounds_Left"]
+shape = SubResource("bounds_left_shape")
+
+[node name="Bounds_Right" type="StaticBody2D" parent="Environment"]
+position = Vector2(5466, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Bounds_Right"]
+shape = SubResource("bounds_right_shape")
 
 [node name="Spawners" type="Node2D" parent="." unique_id=242131719]
 
@@ -977,6 +997,23 @@ position = Vector2(5146, 569)
 
 [node name="LevelEnd" parent="Spawners" unique_id=1161809576 instance=ExtResource("3_trigger")]
 position = Vector2(5346, 569)
+
+[node name="Tutorial" type="Label" parent="."]
+offset_left = 40.0
+offset_top = 372.0
+offset_right = 440.0
+offset_bottom = 552.0
+scale = Vector2(1.5, 1.5)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_constants/line_spacing = 4
+theme_override_fonts/font = ExtResource("13_font")
+theme_override_font_sizes/font_size = 14
+text = "BIENVENIDO
+MUEVETE CON A Y D
+SALTA CON W O ESPACIO
+GOLPEA CON K
+AGARRA UN ARMA CON E
+SUELTA EL ARMA CON G"
 
 [node name="Enemies" type="Node2D" parent="." unique_id=897905497]
 
@@ -997,8 +1034,8 @@ patrol_distance = 100.0
 [node name="Enemy_Low_2" parent="Enemies" unique_id=1271002956 instance=ExtResource("5_enemy")]
 position = Vector2(3246, 593)
 patrol_distance = 100.0
-has_armor = true
 hp = 4.0
+has_armor = true
 
 [node name="Enemy_Low_3" parent="Enemies" unique_id=366765665 instance=ExtResource("5_enemy")]
 position = Vector2(3823, 593)
@@ -1007,8 +1044,8 @@ patrol_distance = 100.0
 [node name="Enemy_Peak" parent="Enemies" unique_id=432865658 instance=ExtResource("5_enemy")]
 position = Vector2(3446, 341)
 patrol_distance = 30.0
-has_armor = true
 hp = 4.0
+has_armor = true
 
 [node name="Enemy_Pillar_1" parent="Enemies" unique_id=277688808 instance=ExtResource("5_enemy")]
 position = Vector2(4396, 593)
@@ -1017,8 +1054,8 @@ patrol_distance = 40.0
 [node name="Enemy_Pillar_2" parent="Enemies" unique_id=1637500518 instance=ExtResource("5_enemy")]
 position = Vector2(4696, 593)
 patrol_distance = 40.0
-has_armor = true
 hp = 4.0
+has_armor = true
 
 [node name="Enemy_Meta" parent="Enemies" unique_id=2142579173 instance=ExtResource("5_enemy")]
 position = Vector2(5246, 593)

@@ -75,6 +75,12 @@ size = Vector2(128, 31)
 [sub_resource type="RectangleShape2D" id="g_meta_shape"]
 size = Vector2(319, 31)
 
+[sub_resource type="RectangleShape2D" id="bounds_left_shape"]
+size = Vector2(32, 2400)
+
+[sub_resource type="RectangleShape2D" id="bounds_right_shape"]
+size = Vector2(32, 2400)
+
 [sub_resource type="TileSetAtlasSource" id="atlas_surf"]
 texture = ExtResource("7_surf")
 0:0/0 = 0
@@ -516,6 +522,18 @@ offset_top = -19.0
 offset_right = 164.0
 offset_bottom = 12.0
 color = Color(0.3, 0.6, 0.2, 1)
+
+[node name="Bounds_Left" type="StaticBody2D" parent="Environment"]
+position = Vector2(-16, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Bounds_Left"]
+shape = SubResource("bounds_left_shape")
+
+[node name="Bounds_Right" type="StaticBody2D" parent="Environment"]
+position = Vector2(4916, 0)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Bounds_Right"]
+shape = SubResource("bounds_right_shape")
 
 [node name="MetaFlag" type="ColorRect" parent="Environment" unique_id=490451501]
 offset_left = 4768.0

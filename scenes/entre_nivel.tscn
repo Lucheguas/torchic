@@ -13,6 +13,12 @@ size = Vector2(32, 96)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ground"]
 size = Vector2(960, 65)
 
+[sub_resource type="RectangleShape2D" id="bounds_left_shape"]
+size = Vector2(32, 1200)
+
+[sub_resource type="RectangleShape2D" id="bounds_right_shape"]
+size = Vector2(32, 1200)
+
 
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_aii5v"]
@@ -217,6 +223,18 @@ color = Color(0.3, 0.6, 0.2, 1)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Ground" unique_id=99337667]
 position = Vector2(0, -0.5)
 shape = SubResource("RectangleShape2D_ground")
+
+[node name="Bounds_Left" type="StaticBody2D" parent="Environment"]
+position = Vector2(-16, -100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Bounds_Left"]
+shape = SubResource("bounds_left_shape")
+
+[node name="Bounds_Right" type="StaticBody2D" parent="Environment"]
+position = Vector2(976, -100)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Bounds_Right"]
+shape = SubResource("bounds_right_shape")
 
 [node name="Node2D" type="Node2D" parent="." unique_id=2071873243]
 

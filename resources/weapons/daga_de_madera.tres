@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="MeleeWeapon" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="MeleeWeapon" format=3 uid="uid://cryxela06ike2"]
 
-[ext_resource type="Script" path="res://scripts/weapons/melee_weapon.gd" id="1_weapon"]
+[ext_resource type="Script" uid="uid://b3k5y747uswvg" path="res://scripts/weapons/melee_weapon.gd" id="1_weapon"]
 [ext_resource type="Texture2D" uid="uid://c47kklkrfemwu" path="res://resources/weapons/Sprite-000ESPADAROSA.png" id="2_tex"]
 
 [resource]
