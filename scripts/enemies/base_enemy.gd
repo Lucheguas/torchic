@@ -10,7 +10,7 @@ signal armor_broken()
 ## How the damage reached the enemy. Armor only yields to MELEE.
 enum DamageType { STOMP, MELEE }
 
-@export var hp: int = 1
+@export var hp: float = 3.0
 @export var has_armor: bool = false
 
 const KNOCKBACK_SPEED: float = 200.0
@@ -37,16 +37,21 @@ func apply_knockback(direction: float) -> void:
 
 
 ## Applies damage following the combat matrix: armor absorbs stomps entirely and
-## breaks on melee. An unarmored enemy loses hp and dies at hp <= 0.
-## The stomp bounce is the player's business and happens regardless of armor.
-func take_damage(amount: int, type: DamageType) -> void:
+## breaks on melee. Once unarmored, a melee hit chips hp by the weapon's damage
+## while a stomp is a one-hit kill (a design decision: an unarmored enemy always
+## dies to a single stomp, no matter its hp). The bounce itself is the player's
+## business and happens regardless of armor.
+func take_damage(amount: float, type: DamageType) -> void:
 	if has_armor:
 		if type == DamageType.MELEE:
 			_break_armor()
 		return
 
-	hp -= amount
-	if hp <= 0:
+	if type == DamageType.STOMP:
+		hp = 0.0
+	else:
+		hp -= amount
+	if hp <= 0.0:
 		queue_free()
 
 

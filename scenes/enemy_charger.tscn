@@ -14,6 +14,7 @@ size = Vector2(28, 8)
 
 [node name="EnemyCharger" type="CharacterBody2D"]
 script = ExtResource("1_charger")
+hp = 4.0
 sprite_right_1 = ExtResource("2_right1")
 sprite_right_2 = ExtResource("3_right2")
 sprite_left_1 = ExtResource("4_left1")

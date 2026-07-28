@@ -3,6 +3,9 @@
 [ext_resource type="Script" uid="uid://bsxtum5nosacn" path="res://scripts/level_system/transition_trigger.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cio0uwparotgo" path="res://scenes/levels/Terrain (16x16).png" id="1_aii5v"]
 [ext_resource type="PackedScene" uid="uid://bs6hcqyn2v4bb" path="res://scenes/player.tscn" id="2_player"]
+[ext_resource type="PackedScene" path="res://scenes/weapon_pickup.tscn" id="4_pickup"]
+[ext_resource type="Resource" path="res://resources/weapons/maza.tres" id="5_maza"]
+[ext_resource type="Resource" path="res://resources/weapons/katana.tres" id="6_katana"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_exit"]
 size = Vector2(32, 96)
@@ -10,11 +13,7 @@ size = Vector2(32, 96)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_ground"]
 size = Vector2(960, 65)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_roof"]
-size = Vector2(160, 16)
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_wall"]
-size = Vector2(16, 32)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_aii5v"]
 texture = ExtResource("1_aii5v")
@@ -173,23 +172,13 @@ position = Vector2(48, 206)
 
 [node name="Camera2D" type="Camera2D" parent="Player" unique_id=396682624]
 
-[node name="ShopStand" type="Node2D" parent="." unique_id=1298113070]
-position = Vector2(480, 208)
+[node name="PedestalMaza" parent="." instance=ExtResource("4_pickup")]
+position = Vector2(360, 208)
+weapon = ExtResource("5_maza")
 
-[node name="Visual" type="ColorRect" parent="ShopStand" unique_id=1233238351]
-offset_left = -16.0
-offset_top = -16.0
-offset_right = 16.0
-offset_bottom = 16.0
-color = Color(0.7, 0.5, 0.2, 1)
-
-[node name="Label" type="Label" parent="ShopStand" unique_id=1749235807]
-offset_left = -32.0
-offset_top = -36.0
-offset_right = 32.0
-offset_bottom = -16.0
-text = "TIENDA"
-horizontal_alignment = 1
+[node name="PedestalKatana" parent="." instance=ExtResource("4_pickup")]
+position = Vector2(600, 208)
+weapon = ExtResource("6_katana")
 
 [node name="ExitTrigger" type="Area2D" parent="." unique_id=2043085453]
 position = Vector2(912, 176)
@@ -228,45 +217,6 @@ color = Color(0.3, 0.6, 0.2, 1)
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/Ground" unique_id=99337667]
 position = Vector2(0, -0.5)
 shape = SubResource("RectangleShape2D_ground")
-
-[node name="ShopRoof" type="StaticBody2D" parent="Environment" unique_id=2141685315]
-position = Vector2(480, 136)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/ShopRoof" unique_id=911787471]
-shape = SubResource("RectangleShape2D_roof")
-
-[node name="Visual" type="ColorRect" parent="Environment/ShopRoof" unique_id=106194285]
-offset_left = -80.0
-offset_top = -8.0
-offset_right = 80.0
-offset_bottom = 8.0
-color = Color(0.4, 0.3, 0.25, 1)
-
-[node name="ShopWallLeft" type="StaticBody2D" parent="Environment" unique_id=478701091]
-position = Vector2(408, 160)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/ShopWallLeft" unique_id=908295514]
-shape = SubResource("RectangleShape2D_wall")
-
-[node name="Visual" type="ColorRect" parent="Environment/ShopWallLeft" unique_id=819420382]
-offset_left = -8.0
-offset_top = -16.0
-offset_right = 8.0
-offset_bottom = 16.0
-color = Color(0.4, 0.3, 0.25, 1)
-
-[node name="ShopWallRight" type="StaticBody2D" parent="Environment" unique_id=458678418]
-position = Vector2(552, 160)
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Environment/ShopWallRight" unique_id=136501914]
-shape = SubResource("RectangleShape2D_wall")
-
-[node name="Visual" type="ColorRect" parent="Environment/ShopWallRight" unique_id=1764114997]
-offset_left = -8.0
-offset_top = -16.0
-offset_right = 8.0
-offset_bottom = 16.0
-color = Color(0.4, 0.3, 0.25, 1)
 
 [node name="Node2D" type="Node2D" parent="." unique_id=2071873243]
 

@@ -3,7 +3,12 @@ extends Area2D
 ## Player-owned Area2D hitbox that activates briefly when the weapon is triggered.
 ## Damage per hit and weapon identity come from the assigned MeleeWeapon resource.
 
-@export var weapon: MeleeWeapon
+## Setting a new weapon (equip/swap/drop) immediately updates the in-hand blade
+## sprite so the swing shows the right weapon.
+@export var weapon: MeleeWeapon:
+	set(value):
+		weapon = value
+		_apply_weapon_visual()
 @export var attack_duration: float = 0.15
 ## Distance in front of the player, in pixels. Together with the hitbox width it
 ## must out-reach the side contact-death range so the player can strike a
@@ -14,6 +19,10 @@ extends Area2D
 ## cosmetic: the CollisionShape2D hitbox does not rotate.
 const SWING_ARC: float = 1.4
 
+## On-screen height (px) of the in-hand weapon sprite. Auto-scaling to this keeps
+## weapons of any source resolution looking consistent in the player's hand.
+const BLADE_HEIGHT: float = 30.0
+
 var _attack_timer: float = 0.0
 var _already_hit: Dictionary = {}  ## Enemies hit during the current swing
 @onready var _blade: Node2D = $Blade
@@ -22,8 +31,27 @@ var _already_hit: Dictionary = {}  ## Enemies hit during the current swing
 func _ready() -> void:
 	monitoring = false
 	visible = false
-	_pivot_blade_at_bottom()
+	_apply_weapon_visual()
 	body_entered.connect(_on_body_entered)
+
+
+## Matches the in-hand blade sprite to the equipped weapon's texture and scales
+## it to a consistent height, then re-pivots it at its base. Called on ready and
+## whenever the weapon changes. No-op before the node is ready (_blade unset) or
+## when the weapon has no texture.
+func _apply_weapon_visual() -> void:
+	if _blade == null:
+		return
+	var sprite := _blade as Sprite2D
+	if sprite == null:
+		return
+	if weapon != null and weapon.texture != null:
+		sprite.texture = weapon.texture
+		var h := weapon.texture.get_height()
+		if h > 0:
+			var s := BLADE_HEIGHT / float(h)
+			sprite.scale = Vector2(s, s)
+	_pivot_blade_at_bottom()
 
 
 ## Moves the blade art up so the node origin sits at its bottom edge. The swing

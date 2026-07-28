@@ -27,6 +27,11 @@ var current_floor_id: int = 1
 var player_ref: CharacterBody2D = null
 var _current_scene_root: Node = null
 var _lives: int = STARTING_LIVES
+## The weapon the player currently carries, tracked so it survives scene changes
+## (each scene embeds its own player with the default weapon). Only meaningful
+## once _weapon_overridden is true; null then means the player is unarmed.
+var equipped_weapon = null  # MeleeWeapon
+var _weapon_overridden: bool = false
 var _game_over_screen: Node = null
 var _hud: Node = null
 
@@ -85,6 +90,9 @@ func start_game(from_save: bool = false) -> void:
 		# pressing "Inicio" in the menu begins a fresh run every time.
 		floor_progress = fpd_script.new()
 	_lives = STARTING_LIVES
+	# A fresh run starts with the default weapon baked into the player scene.
+	equipped_weapon = null
+	_weapon_overridden = false
 	_show_hud()
 	lives_changed.emit(_lives)
 	current_floor_id = floor_progress.current_floor
@@ -241,6 +249,25 @@ func set_player_input_enabled(enabled: bool) -> void:
 			player_ref.set_physics_process(true)
 
 
+## Records the weapon the player is now carrying (null = unarmed) so it carries
+## across floors. Called by the player whenever it picks up or drops a weapon.
+func set_equipped_weapon(weapon) -> void:
+	equipped_weapon = weapon
+	_weapon_overridden = true
+
+
+## Re-applies the carried weapon onto the current player's MeleeAttack. Each
+## scene embeds its own player with the default weapon, so this restores the
+## player's real weapon every time a new floor or the entre-nivel is set up.
+## Before any pickup/drop (_weapon_overridden false) the scene default is kept.
+func _apply_equipped_weapon() -> void:
+	if not _weapon_overridden or player_ref == null:
+		return
+	var melee := player_ref.get_node_or_null("MeleeAttack")
+	if melee:
+		melee.weapon = equipped_weapon
+
+
 ## Resolves player_ref from the "player" group in the current scene and makes
 ## sure the player has a current Camera2D (creates one if the scene omitted it).
 ## Used by both the main floor load and the entre_nivel load.
@@ -254,6 +281,7 @@ func _setup_player_and_camera() -> void:
 		camera.name = "Camera2D"
 		player_ref.add_child(camera)
 	camera.make_current()
+	_apply_equipped_weapon()
 
 
 ## Connects the level nodes that both the SceneLoader path and the standalone

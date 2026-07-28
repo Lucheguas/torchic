@@ -1,10 +1,10 @@
 [gd_resource type="Resource" script_class="MeleeWeapon" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/weapons/melee_weapon.gd" id="1_weapon"]
-[ext_resource type="Texture2D" uid="uid://c47kklkrfemwu" path="res://resources/weapons/Sprite-000ESPADAROSA.png" id="2_tex"]
+[ext_resource type="Texture2D" path="res://maza.png" id="2_tex"]
 
 [resource]
 script = ExtResource("1_weapon")
-weapon_name = "Espada"
-damage = 0.8
+weapon_name = "Maza"
+damage = 1.5
 texture = ExtResource("2_tex")

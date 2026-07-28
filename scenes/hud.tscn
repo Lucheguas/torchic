@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://ml7uwm42iyay"]
+[gd_scene load_steps=2 format=3 uid="uid://ml7uwm42iyay"]
 
 [ext_resource type="Script" path="res://scripts/hud.gd" id="1_hud"]
 
@@ -6,9 +6,24 @@
 layer = 50
 script = ExtResource("1_hud")
 
-[node name="LivesLabel" type="Label" parent="."]
+[node name="Hearts" type="HBoxContainer" parent="."]
 offset_left = 8.0
 offset_top = 6.0
-offset_right = 160.0
+offset_right = 88.0
 offset_bottom = 30.0
-text = "Vidas: 3"
+theme_override_constants/separation = 2
+
+[node name="Heart1" type="TextureRect" parent="Hearts"]
+custom_minimum_size = Vector2(24, 24)
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Heart2" type="TextureRect" parent="Hearts"]
+custom_minimum_size = Vector2(24, 24)
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Heart3" type="TextureRect" parent="Hearts"]
+custom_minimum_size = Vector2(24, 24)
+expand_mode = 1
+stretch_mode = 5

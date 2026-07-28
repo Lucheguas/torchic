@@ -998,6 +998,7 @@ patrol_distance = 100.0
 position = Vector2(3246, 593)
 patrol_distance = 100.0
 has_armor = true
+hp = 4.0
 
 [node name="Enemy_Low_3" parent="Enemies" unique_id=366765665 instance=ExtResource("5_enemy")]
 position = Vector2(3823, 593)
@@ -1007,6 +1008,7 @@ patrol_distance = 100.0
 position = Vector2(3446, 341)
 patrol_distance = 30.0
 has_armor = true
+hp = 4.0
 
 [node name="Enemy_Pillar_1" parent="Enemies" unique_id=277688808 instance=ExtResource("5_enemy")]
 position = Vector2(4396, 593)
@@ -1016,6 +1018,7 @@ patrol_distance = 40.0
 position = Vector2(4696, 593)
 patrol_distance = 40.0
 has_armor = true
+hp = 4.0
 
 [node name="Enemy_Meta" parent="Enemies" unique_id=2142579173 instance=ExtResource("5_enemy")]
 position = Vector2(5246, 593)

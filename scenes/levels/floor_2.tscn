@@ -548,6 +548,7 @@ position = Vector2(326, 576)
 position = Vector2(984, 575)
 patrol_distance = 30.0
 has_armor = true
+hp = 4.0
 
 [node name="Enemy_Charger_Z2" parent="Enemies" unique_id=269000703 instance=ExtResource("11_charger")]
 position = Vector2(1400, 575)
@@ -569,11 +570,13 @@ patrol_distance = 80.0
 position = Vector2(3201, 575)
 patrol_distance = 80.0
 has_armor = true
+hp = 4.0
 
 [node name="Enemy_Z4a" parent="Enemies" unique_id=659852731 instance=ExtResource("5_enemy")]
 position = Vector2(3990, 480)
 patrol_distance = 30.0
 has_armor = true
+hp = 4.0
 
 [node name="Enemy_Z4b" parent="Enemies" unique_id=81537165 instance=ExtResource("5_enemy")]
 position = Vector2(4337, 366)

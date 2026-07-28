@@ -44,6 +44,13 @@ signal stomp_bounced()
 ## Composition: equipment- and level-derived modifiers with clamped setters.
 var _modifiers: ModifierStack = ModifierStack.new()
 
+## Ground weapon item the player is currently standing on, if any. Set/cleared
+## by WeaponPickup as the player overlaps it; used to pick up with E.
+var _nearby_pickup: WeaponPickup = null
+
+## Scene spawned when the player drops a weapon, so it stays on the ground.
+const WEAPON_PICKUP_SCENE: PackedScene = preload("res://scenes/weapon_pickup.tscn")
+
 ## Whether the player has used their double jump this air cycle
 var _has_double_jumped: bool = false
 
@@ -130,6 +137,50 @@ func notify_stomp_hit() -> void:
 	_stomp_requested = true
 	_stomp_grace_timer = stomp_grace_duration
 
+
+# --- Weapon pickup / drop ---
+
+## Registered by a WeaponPickup when the player steps onto it.
+func set_nearby_pickup(pickup: WeaponPickup) -> void:
+	_nearby_pickup = pickup
+
+
+## Cleared when the player steps off; guarded so a stale pickup doesn't wipe a
+## newer one the player already stepped onto.
+func clear_nearby_pickup(pickup: WeaponPickup) -> void:
+	if _nearby_pickup == pickup:
+		_nearby_pickup = null
+
+
+## E: take the weapon under the player and swap the current one back onto the
+## pickup. The player only ever carries one weapon; the swapped-out weapon stays
+## available on the ground (an empty pickup removes itself).
+func _try_pickup_weapon() -> void:
+	if _nearby_pickup == null or not is_instance_valid(_nearby_pickup):
+		return
+	if _nearby_pickup.weapon == null:
+		return
+	var picked: MeleeWeapon = _nearby_pickup.weapon
+	var previous: MeleeWeapon = $MeleeAttack.weapon
+	$MeleeAttack.weapon = picked
+	LevelManager.set_equipped_weapon(picked)
+	_nearby_pickup.set_weapon(previous)
+
+
+## G: drop the current weapon as a ground item at the player's feet. It stays on
+## the ground and the player is left unarmed until they pick something up.
+func _try_drop_weapon() -> void:
+	var current: MeleeWeapon = $MeleeAttack.weapon
+	if current == null:
+		return
+	var dropped := WEAPON_PICKUP_SCENE.instantiate()
+	dropped.weapon = current
+	dropped.show_label = false
+	get_parent().add_child(dropped)
+	dropped.global_position = global_position
+	$MeleeAttack.weapon = null
+	LevelManager.set_equipped_weapon(null)
+
 # --- Private Helper Methods ---
 
 ## Calculates the effective speed using current instance state.
@@ -186,9 +237,15 @@ func _physics_process(delta: float) -> void:
 	_animate_frames(delta, direction != 0.0)
 
 	# Melee attack — always swing toward the last moved direction, even if the
-	# character is currently facing front while idle.
-	if Input.is_action_just_pressed("attack"):
+	# character is currently facing front while idle. No weapon, no swing.
+	if Input.is_action_just_pressed("attack") and $MeleeAttack.weapon != null:
 		$MeleeAttack.trigger(_facing)
+
+	# Weapon pickup / drop (entre-nivel pedestals and dropped items).
+	if Input.is_action_just_pressed("pickup_weapon"):
+		_try_pickup_weapon()
+	if Input.is_action_just_pressed("drop_weapon"):
+		_try_drop_weapon()
 
 
 ## Frame-based walk: alternates the two foot textures for the current direction

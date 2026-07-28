@@ -104,7 +104,7 @@ func _ready() -> void:
 
 ## Flashes on any hit that actually connects (armor breaking or hp loss) so the
 ## strike reads clearly. Absorbed stomps on armor don't flash — nothing happened.
-func take_damage(amount: int, type: DamageType) -> void:
+func take_damage(amount: float, type: DamageType) -> void:
 	var had_armor := has_armor
 	super.take_damage(amount, type)
 	if had_armor != has_armor or not had_armor:
