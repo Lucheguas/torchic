@@ -6,6 +6,18 @@ Un platformer 2D pixel art hecho en **Godot 4.7**, con GDScript.
 
 ---
 
+## ⬇️ Descargar y jugar
+
+**[➡️ Descargar la última versión](https://github.com/Lucheguas/torchic/releases/latest)**
+
+1. Entra al link y descarga el `.zip` de Windows desde la sección **Assets**.
+2. Descomprímelo y ejecuta `Torchic.exe`.
+3. No hace falta instalar nada más.
+
+> ⚠️ Al ser un ejecutable sin firmar, Windows puede mostrar el aviso *"Windows protegió tu PC"*. Haz clic en **Más información → Ejecutar de todas formas**. Es normal en juegos independientes.
+
+---
+
 ## ✨ Características
 
 - Plataformeo 2D clásico con *game feel* pulido (salto variable, coyote time, buffer de salto).
